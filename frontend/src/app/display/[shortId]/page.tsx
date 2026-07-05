@@ -14,7 +14,15 @@ export default function DisplayContentPage() {
   useEffect(() => {
     const fetchPublicQr = async () => {
       try {
-        const data = await apiRequest(`/qr/public/${params.shortId}`);
+        const data = await apiRequest(`/api/qr/${params.shortId}`);
+        if (data.type === 'url') {
+          let targetUrl = typeof data.destination_content === 'object' ? data.destination_content.url : data.destination_content;
+          if (!/^https?:\/\//i.test(targetUrl)) {
+            targetUrl = 'http://' + targetUrl;
+          }
+          window.location.href = targetUrl;
+          return;
+        }
         setQr(data);
       } catch (err: any) {
         showToast(err.message || 'Error resolving QR code content.', 'error');

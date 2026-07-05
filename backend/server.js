@@ -9,7 +9,10 @@ const authMiddleware = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const FRONTEND_URL = process.env.FRONTEND_URL || 'https://dynamic-qr-ivory.vercel.app';
+let FRONTEND_URL = process.env.FRONTEND_URL || 'https://dynamic-qr-ivory.vercel.app';
+if (!/^https?:\/\//i.test(FRONTEND_URL)) {
+  FRONTEND_URL = 'https://' + FRONTEND_URL;
+}
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_key_change_me_in_production';
 
 app.use(cors({ origin: '*' })); // Allow all origins for development and QR scanning
@@ -660,6 +663,33 @@ app.get('/admin/stats', authMiddleware, adminMiddleware, async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ message: 'Error retrieving platform statistics' });
+  }
+});
+
+// Get Public QR Content endpoint for frontend redirection and display
+app.get('/api/qr/:shortId', async (req, res) => {
+  try {
+    const qr = await db.prepare('SELECT * FROM qr_codes WHERE short_id = ?').get(req.params.shortId);
+    if (!qr) {
+      return res.status(404).json({ message: 'QR Code not found' });
+    }
+
+    if (qr.status !== 'active') {
+      return res.status(403).json({ message: 'QR Code is inactive' });
+    }
+
+    try {
+      qr.destination_content = JSON.parse(qr.destination_content);
+    } catch (e) {}
+
+    res.json({
+      type: qr.type,
+      destination_content: qr.destination_content,
+      created_at: qr.created_at
+    });
+  } catch (err) {
+    console.error('Error fetching public QR details:', err);
+    res.status(500).json({ message: 'Error fetching QR details' });
   }
 });
 
