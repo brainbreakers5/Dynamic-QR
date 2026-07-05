@@ -9,7 +9,7 @@ const authMiddleware = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://dynamic-qr-ivory.vercel.app';
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_key_change_me_in_production';
 
 app.use(cors({ origin: '*' })); // Allow all origins for development and QR scanning
