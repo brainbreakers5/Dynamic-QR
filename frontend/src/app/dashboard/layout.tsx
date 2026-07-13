@@ -10,6 +10,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const pathname = usePathname();
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Protect route
   useEffect(() => {
@@ -17,6 +18,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       router.push('/login');
     }
   }, [user, loading, router]);
+
+  // Close sidebar on page change (for mobile viewports)
+  useEffect(() => {
+    setIsSidebarOpen(false);
+  }, [pathname]);
 
   // Load and apply theme
   useEffect(() => {
@@ -52,19 +58,46 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const isLinkActive = (path: string) => pathname === path;
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', flexDirection: 'row' }}>
+    <div className="dashboard-wrapper">
+      {/* Mobile Top Navbar Header */}
+      <header className="dashboard-mobile-header">
+        <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="2" width="10" height="10" rx="2" stroke="url(#mobileLogoGrad)" strokeWidth="3" />
+            <rect x="2" y="20" width="10" height="10" rx="2" stroke="url(#mobileLogoGrad)" strokeWidth="3" />
+            <rect x="20" y="2" width="10" height="10" rx="2" stroke="url(#mobileLogoGrad)" strokeWidth="3" />
+            <rect x="20" y="20" width="10" height="10" rx="2" fill="url(#mobileLogoGrad)" />
+            <defs>
+              <linearGradient id="mobileLogoGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                <stop stopColor="var(--accent-primary)" />
+                <stop offset="1" stopColor="var(--accent-secondary)" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <span style={{ fontSize: '1.1rem', fontWeight: 800, letterSpacing: '-0.02em' }}>
+            QR<span style={{ color: 'var(--accent-secondary)' }}>Flow</span>
+          </span>
+        </Link>
+
+        <button
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="btn btn-secondary"
+          style={{ padding: '8px 12px', border: '1px solid var(--glass-border)' }}
+          aria-label="Toggle Navigation Drawer"
+        >
+          <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </header>
+
+      {/* Mobile Drawer Overlay */}
+      {isSidebarOpen && (
+        <div className="dashboard-sidebar-overlay" onClick={() => setIsSidebarOpen(false)} />
+      )}
+
       {/* Sidebar Navigation */}
-      <aside className="glass-panel" style={{
-        width: '280px',
-        margin: '20px',
-        marginRight: '10px',
-        display: 'flex',
-        flexDirection: 'column',
-        borderRadius: 'var(--border-radius-md)',
-        padding: '24px',
-        gap: '32px',
-        flexShrink: 0
-      }}>
+      <aside className={`glass-panel dashboard-sidebar ${isSidebarOpen ? 'open' : ''}`}>
         {/* Branding */}
         <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -168,14 +201,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Main Content Workspace */}
-      <main style={{
-        flex: 1,
-        margin: '20px',
-        marginLeft: '10px',
-        padding: '24px',
-        overflowY: 'auto',
-        maxHeight: 'calc(100vh - 40px)',
-      }}>
+      <main className="dashboard-main">
         {children}
       </main>
     </div>

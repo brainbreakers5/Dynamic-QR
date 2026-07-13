@@ -155,7 +155,7 @@ export default function NewQrPage() {
         <p>Design a custom styled dynamic QR code. You can update its contents anytime.</p>
       </div>
 
-      <div style={{
+      <div className="responsive-grid-2col" style={{
         display: 'grid',
         gridTemplateColumns: '1fr 340px',
         gap: '32px',
@@ -378,7 +378,7 @@ export default function NewQrPage() {
 
             {/* vCard */}
             {type === 'vcard' && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div className="responsive-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div className="form-group">
                   <label className="form-label">First Name</label>
                   <input
@@ -445,7 +445,7 @@ export default function NewQrPage() {
             {/* Location */}
             {type === 'location' && (
               <>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="responsive-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div className="form-group">
                     <label className="form-label">Latitude</label>
                     <input
@@ -493,7 +493,7 @@ export default function NewQrPage() {
                     onChange={(e) => setEventData({ ...eventData, title: e.target.value })}
                   />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="responsive-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div className="form-group">
                     <label className="form-label">Start Time</label>
                     <input
@@ -532,7 +532,7 @@ export default function NewQrPage() {
             <h3 style={{ fontSize: '1.15rem' }}>Design & Styling Customization</h3>
 
             {/* Color controls */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="responsive-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div className="form-group">
                 <label className="form-label">Dot Grid Color</label>
                 <div style={{ display: 'flex', gap: '8px' }}>
@@ -615,7 +615,7 @@ export default function NewQrPage() {
             </div>
 
             {/* Shape Customization */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="responsive-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div className="form-group">
                 <label className="form-label">Dot Modules Shape</label>
                 <select
@@ -668,7 +668,7 @@ export default function NewQrPage() {
             </div>
 
             {/* Logo size & error corrections */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="responsive-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div className="form-group">
                 <label className="form-label">Logo Overlay Size ({Math.round(logoSize * 100)}%)</label>
                 <input

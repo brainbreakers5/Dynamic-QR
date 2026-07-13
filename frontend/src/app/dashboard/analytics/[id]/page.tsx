@@ -204,7 +204,7 @@ export default function AnalyticsPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }} className="animate-fade-in">
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <h1 style={{ fontSize: '2.25rem', marginBottom: '4px' }}>Scan Analytics</h1>
           <p>Real-time analytics for short ID: <strong style={{ fontFamily: 'var(--font-mono)' }}>{data.short_id}</strong></p>
@@ -215,12 +215,12 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Hero Stats */}
-      <div className="glass-panel" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '32px 40px', flexWrap: 'wrap', gap: '20px' }}>
+      <div className="glass-panel" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px', flexWrap: 'wrap', gap: '24px' }}>
         <div>
           <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 600 }}>Aggregate Scan Traffic</span>
           <h2 style={{ fontSize: '3rem', fontWeight: 850, color: 'var(--accent-primary)', marginTop: '4px' }}>{data.total_scans}</h2>
         </div>
-        <div style={{ display: 'flex', gap: '32px' }}>
+        <div style={{ display: 'flex', gap: '24px 32px', flexWrap: 'wrap' }}>
           <div>
             <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Daily Avg (Active Days)</span>
             <h4 style={{ fontSize: '1.25rem', marginTop: '4px' }}>

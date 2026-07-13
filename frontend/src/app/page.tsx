@@ -14,10 +14,12 @@ export default function LandingPage() {
         margin: '20px auto',
         width: 'calc(100% - 40px)',
         maxWidth: '1200px',
-        padding: '16px 32px',
+        padding: '16px 24px',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '16px',
         borderRadius: 'var(--border-radius-md)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -39,19 +41,18 @@ export default function LandingPage() {
           </span>
         </div>
 
-        <nav style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+        <nav style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
           <a href="#features" className="nav-link" style={{ fontWeight: 600 }}>Features</a>
-          <a href="#pricing" className="nav-link" style={{ fontWeight: 600 }}>Pricing</a>
           {user ? (
-            <Link href="/dashboard" className="btn btn-primary" style={{ padding: '10px 20px' }}>
+            <Link href="/dashboard" className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '0.9rem' }}>
               Dashboard
             </Link>
           ) : (
-            <div style={{ display: 'flex', gap: '16px' }}>
-              <Link href="/login" className="nav-link" style={{ fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <Link href="/login" className="nav-link" style={{ fontWeight: 600, fontSize: '0.95rem' }}>
                 Sign In
               </Link>
-              <Link href="/signup" className="btn btn-primary" style={{ padding: '10px 20px' }}>
+              <Link href="/signup" className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '0.9rem' }}>
                 Get Started
               </Link>
             </div>
@@ -60,24 +61,24 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '60px 20px' }}>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 16px' }}>
         <section style={{
           textAlign: 'center',
           maxWidth: '800px',
-          marginBottom: '60px',
+          marginBottom: '48px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '24px'
+          gap: '20px'
         }} className="animate-fade-in">
           <span className="badge badge-active" style={{ fontSize: '0.8rem', padding: '6px 12px' }}>
             Next-Gen QR Solutions
           </span>
 
           <h1 style={{
-            fontSize: 'clamp(2.5rem, 6vw, 4rem)',
+            fontSize: 'clamp(2.25rem, 5vw, 4rem)',
             fontWeight: 850,
-            lineHeight: 1.1,
+            lineHeight: 1.15,
             letterSpacing: '-0.04em',
             background: 'linear-gradient(to right, #ffffff, var(--text-secondary))',
             WebkitBackgroundClip: 'text',
@@ -90,21 +91,21 @@ export default function LandingPage() {
             }}>Real-time Analytics</span>
           </h1>
 
-          <p style={{ fontSize: 'clamp(1rem, 2vw, 1.25rem)', maxWidth: '600px', margin: '0 auto' }}>
+          <p style={{ fontSize: 'clamp(0.95rem, 1.8vw, 1.2rem)', maxWidth: '600px', margin: '0 auto', paddingLeft: '12px', paddingRight: '12px' }}>
             Create custom-styled QR codes. Update their destinations at any time without changing the QR image, and track detailed scan statistics.
           </p>
 
-          <div style={{ display: 'flex', gap: '16px', marginTop: '12px' }}>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center', marginTop: '8px' }}>
             {user ? (
-              <Link href="/dashboard" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '1.05rem' }}>
+              <Link href="/dashboard" className="btn btn-primary" style={{ padding: '14px 28px', fontSize: '1rem' }}>
                 Go to Dashboard
               </Link>
             ) : (
               <>
-                <Link href="/signup" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '1.05rem' }}>
+                <Link href="/signup" className="btn btn-primary" style={{ padding: '14px 28px', fontSize: '1rem' }}>
                   Create Free Account
                 </Link>
-                <Link href="/login" className="btn btn-secondary" style={{ padding: '16px 32px', fontSize: '1.05rem' }}>
+                <Link href="/login" className="btn btn-secondary" style={{ padding: '14px 28px', fontSize: '1rem' }}>
                   Live Demo
                 </Link>
               </>
@@ -117,9 +118,9 @@ export default function LandingPage() {
           maxWidth: '1200px',
           width: '100%',
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           gap: '24px',
-          marginTop: '40px'
+          marginTop: '20px'
         }}>
           {/* Card 1 */}
           <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

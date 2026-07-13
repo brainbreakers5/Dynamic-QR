@@ -114,7 +114,7 @@ export default function AdminPanelPage() {
       </div>
 
       {/* Tabs */}
-      <div className="glass-panel" style={{ display: 'flex', gap: '8px', padding: '12px 16px' }}>
+      <div className="glass-panel" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', padding: '12px 16px' }}>
         <button
           onClick={() => setActiveTab('stats')}
           className={`btn ${activeTab === 'stats' ? 'btn-primary' : 'btn-secondary'}`}

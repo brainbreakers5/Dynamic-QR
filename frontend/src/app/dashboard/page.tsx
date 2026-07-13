@@ -241,7 +241,7 @@ export default function DashboardPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }} className="animate-fade-in">
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <h1 style={{ fontSize: '2.25rem', marginBottom: '4px' }}>Dashboard</h1>
           <p>Create, manage, and monitor your dynamic QR code performance</p>
@@ -318,11 +318,11 @@ export default function DashboardPage() {
         </div>
 
         {/* Tab Selection */}
-        <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid var(--glass-border)', paddingTop: '16px' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', borderTop: '1px solid var(--glass-border)', paddingTop: '16px' }}>
           <button
             onClick={() => setSelectedStatus('active')}
             className={`btn ${selectedStatus === 'active' ? 'btn-secondary' : ''}`}
-            style={{ border: selectedStatus === 'active' ? '1px solid var(--accent-primary)' : 'none', background: selectedStatus === 'active' ? 'rgba(124, 77, 255, 0.08)' : 'transparent', color: selectedStatus === 'active' ? 'var(--accent-primary)' : 'var(--text-secondary)' }}
+            style={{ border: selectedStatus === 'active' ? '1px solid var(--accent-primary)' : 'none', background: selectedStatus === 'active' ? 'rgba(124, 77, 255, 0.08)' : 'transparent', color: selectedStatus === 'active' ? 'var(--accent-primary)' : 'var(--text-secondary)', padding: '8px 16px', fontSize: '0.85rem' }}
           >
             Active QRs ({qrs.filter(q => q.status === 'active').length})
           </button>
@@ -330,7 +330,7 @@ export default function DashboardPage() {
           <button
             onClick={() => setSelectedStatus('archived')}
             className={`btn ${selectedStatus === 'archived' ? 'btn-secondary' : ''}`}
-            style={{ border: selectedStatus === 'archived' ? '1px solid var(--accent-warning)' : 'none', background: selectedStatus === 'archived' ? 'rgba(255, 214, 0, 0.08)' : 'transparent', color: selectedStatus === 'archived' ? 'var(--accent-warning)' : 'var(--text-secondary)' }}
+            style={{ border: selectedStatus === 'archived' ? '1px solid var(--accent-warning)' : 'none', background: selectedStatus === 'archived' ? 'rgba(255, 214, 0, 0.08)' : 'transparent', color: selectedStatus === 'archived' ? 'var(--accent-warning)' : 'var(--text-secondary)', padding: '8px 16px', fontSize: '0.85rem' }}
           >
             Archived QRs ({qrs.filter(q => q.status === 'archived').length})
           </button>
@@ -338,7 +338,7 @@ export default function DashboardPage() {
           <button
             onClick={() => setSelectedStatus('deleted')}
             className={`btn ${selectedStatus === 'deleted' ? 'btn-secondary' : ''}`}
-            style={{ border: selectedStatus === 'deleted' ? '1px solid var(--accent-error)' : 'none', background: selectedStatus === 'deleted' ? 'rgba(255, 23, 68, 0.08)' : 'transparent', color: selectedStatus === 'deleted' ? 'var(--accent-error)' : 'var(--text-secondary)' }}
+            style={{ border: selectedStatus === 'deleted' ? '1px solid var(--accent-error)' : 'none', background: selectedStatus === 'deleted' ? 'rgba(255, 23, 68, 0.08)' : 'transparent', color: selectedStatus === 'deleted' ? 'var(--accent-error)' : 'var(--text-secondary)', padding: '8px 16px', fontSize: '0.85rem' }}
           >
             Trash ({qrs.filter(q => q.status === 'deleted').length})
           </button>
@@ -347,7 +347,7 @@ export default function DashboardPage() {
 
       {/* QR Codes Grid */}
       {loading ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
           {[1, 2, 3].map(i => (
             <div key={i} className="glass-panel shimmer-loading" style={{ height: '300px' }}>Loading...</div>
           ))}
@@ -361,7 +361,7 @@ export default function DashboardPage() {
           <p>No QR codes match your selected filter criteria. Try updating search tags or creating a new QR code.</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
           {filteredQrs.map((qr) => {
             const shortUrl = `${API_URL}/qr/${qr.short_id}`;
             let destPreview = '';
@@ -413,30 +413,32 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Operations */}
-                <div style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: 'auto' }}>
                   {qr.status === 'deleted' ? (
-                    <>
+                    <div style={{ display: 'flex', gap: '8px' }}>
                       <button onClick={() => handleRestore(qr.id)} className="btn btn-secondary" style={{ flex: 1, padding: '8px' }}>
                         Restore
                       </button>
                       <button onClick={() => handlePermanentDelete(qr.id)} className="btn btn-danger" style={{ flex: 1, padding: '8px' }}>
                         Purge
                       </button>
-                    </>
+                    </div>
                   ) : (
                     <>
-                      <Link href={`/dashboard/edit/${qr.id}`} className="btn btn-secondary" style={{ flex: 1, padding: '8px', fontSize: '0.85rem' }}>
-                        Edit
-                      </Link>
-                      <Link href={`/dashboard/analytics/${qr.id}`} className="btn btn-secondary" style={{ flex: 1, padding: '8px', fontSize: '0.85rem', borderColor: 'rgba(0, 230, 118, 0.25)' }}>
-                        Stats
-                      </Link>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <Link href={`/dashboard/edit/${qr.id}`} className="btn btn-secondary" style={{ flex: 1, padding: '8px', fontSize: '0.85rem' }}>
+                          Edit
+                        </Link>
+                        <Link href={`/dashboard/analytics/${qr.id}`} className="btn btn-secondary" style={{ flex: 1, padding: '8px', fontSize: '0.85rem', borderColor: 'rgba(0, 230, 118, 0.25)' }}>
+                          Stats
+                        </Link>
+                      </div>
 
-                      {/* Download Button Group (Simple dropdown styled as buttons) */}
-                      <div style={{ display: 'flex', gap: '4px' }}>
-                        <button onClick={() => handleDownload(qr, 'png')} className="btn btn-secondary" style={{ padding: '8px', fontSize: '0.8rem' }} title="Download PNG">PNG</button>
-                        <button onClick={() => handleDownload(qr, 'svg')} className="btn btn-secondary" style={{ padding: '8px', fontSize: '0.8rem' }} title="Download SVG">SVG</button>
-                        <button onClick={() => handleDownloadPDF(qr)} className="btn btn-primary" style={{ padding: '8px', fontSize: '0.8rem' }} title="Export PDF Report">PDF</button>
+                      {/* Download Button Group */}
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <button onClick={() => handleDownload(qr, 'png')} className="btn btn-secondary" style={{ flex: 1, padding: '8px', fontSize: '0.8rem' }} title="Download PNG">PNG</button>
+                        <button onClick={() => handleDownload(qr, 'svg')} className="btn btn-secondary" style={{ flex: 1, padding: '8px', fontSize: '0.8rem' }} title="Download SVG">SVG</button>
+                        <button onClick={() => handleDownloadPDF(qr)} className="btn btn-primary" style={{ flex: 1, padding: '8px', fontSize: '0.8rem' }} title="Export PDF Report">PDF</button>
                       </div>
                     </>
                   )}

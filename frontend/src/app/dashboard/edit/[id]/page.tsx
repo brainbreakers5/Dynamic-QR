@@ -210,7 +210,7 @@ export default function EditQrPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }} className="animate-fade-in">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <h1 style={{ fontSize: '2.25rem', marginBottom: '4px' }}>Edit QR Destination</h1>
           <p>Update where this QR Code redirects or tweak its styling. The QR image remains unchanged.</p>
@@ -220,7 +220,7 @@ export default function EditQrPage() {
         </button>
       </div>
 
-      <div style={{
+      <div className="responsive-grid-2col" style={{
         display: 'grid',
         gridTemplateColumns: '1fr 340px',
         gap: '32px',
@@ -438,7 +438,7 @@ export default function EditQrPage() {
 
             {/* vCard */}
             {type === 'vcard' && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div className="responsive-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div className="form-group">
                   <label className="form-label">First Name</label>
                   <input
@@ -499,7 +499,7 @@ export default function EditQrPage() {
             {/* Location */}
             {type === 'location' && (
               <>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="responsive-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div className="form-group">
                     <label className="form-label">Latitude</label>
                     <input
@@ -543,7 +543,7 @@ export default function EditQrPage() {
                     onChange={(e) => setEventData({ ...eventData, title: e.target.value })}
                   />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="responsive-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div className="form-group">
                     <label className="form-label">Start Time</label>
                     <input
@@ -580,7 +580,7 @@ export default function EditQrPage() {
           <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <h3 style={{ fontSize: '1.15rem' }}>Design & Styling Customization</h3>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="responsive-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div className="form-group">
                 <label className="form-label">Dot Grid Color</label>
                 <div style={{ display: 'flex', gap: '8px' }}>
@@ -662,7 +662,7 @@ export default function EditQrPage() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="responsive-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div className="form-group">
                 <label className="form-label">Dot Modules Shape</label>
                 <select
@@ -713,7 +713,7 @@ export default function EditQrPage() {
               )}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="responsive-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div className="form-group">
                 <label className="form-label">Logo Overlay Size ({Math.round(logoSize * 100)}%)</label>
                 <input

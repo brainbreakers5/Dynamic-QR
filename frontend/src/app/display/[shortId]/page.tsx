@@ -368,7 +368,7 @@ export default function DisplayContentPage() {
                 <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Event Title:</span>
                 <h3 style={{ fontSize: '1.25rem', marginTop: '2px' }}>{content.title}</h3>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div className="responsive-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
                   <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Start Time</span>
                   <p style={{ fontSize: '0.9rem', fontWeight: 600 }}>{content.start ? new Date(content.start).toLocaleString() : 'N/A'}</p>
