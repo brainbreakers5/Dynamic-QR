@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "QRFlow - Premium Dynamic QR Code Generator",
+  title: "dynamicQR - Premium Dynamic QR Code Generator",
   description: "Create, style, customize, and edit QR code destinations instantly with detailed real-time scan analytics and tracking.",
 };
 

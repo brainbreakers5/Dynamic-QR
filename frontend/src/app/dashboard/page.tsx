@@ -174,7 +174,7 @@ export default function DashboardPage() {
           doc.setTextColor(255, 255, 255);
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(22);
-          doc.text('QRFlow PDF Export', 105, 30, { align: 'center' });
+          doc.text('dynamicQR PDF Export', 105, 30, { align: 'center' });
           
           doc.setFontSize(12);
           doc.setFont('helvetica', 'normal');

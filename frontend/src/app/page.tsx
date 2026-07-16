@@ -37,7 +37,7 @@ export default function LandingPage() {
             </defs>
           </svg>
           <span style={{ fontSize: '1.4rem', fontWeight: 800, letterSpacing: '-0.03em' }}>
-            QR<span style={{ color: 'var(--accent-secondary)' }}>Flow</span>
+            dynamic<span style={{ color: 'var(--accent-secondary)' }}>QR</span>
           </span>
         </div>
 
@@ -101,14 +101,9 @@ export default function LandingPage() {
                 Go to Dashboard
               </Link>
             ) : (
-              <>
-                <Link href="/signup" className="btn btn-primary" style={{ padding: '14px 28px', fontSize: '1rem' }}>
-                  Create Free Account
-                </Link>
-                <Link href="/login" className="btn btn-secondary" style={{ padding: '14px 28px', fontSize: '1rem' }}>
-                  Live Demo
-                </Link>
-              </>
+              <Link href="/signup" className="btn btn-primary" style={{ padding: '14px 28px', fontSize: '1rem' }}>
+                Create Free Account
+              </Link>
             )}
           </div>
         </section>
@@ -195,7 +190,7 @@ export default function LandingPage() {
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <div>
-            &copy; {new Date().getFullYear()} QRFlow Inc. All rights reserved.
+            &copy; {new Date().getFullYear()} dynamicQR Inc. All rights reserved.
           </div>
           <div style={{ display: 'flex', gap: '20px' }}>
             <a href="#" className="nav-link">Privacy Policy</a>

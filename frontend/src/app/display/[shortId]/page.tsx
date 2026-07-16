@@ -84,7 +84,7 @@ export default function DisplayContentPage() {
     const icsLines = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//QRFlow//Dynamic Event//EN',
+      'PRODID:-//dynamicQR//Dynamic Event//EN',
       'BEGIN:VEVENT',
       `SUMMARY:${content.title || 'Event'}`,
       start ? `DTSTART:${start}` : '',
@@ -150,7 +150,7 @@ export default function DisplayContentPage() {
             </defs>
           </svg>
           <span style={{ fontSize: '1.15rem', fontWeight: 800, letterSpacing: '-0.02em' }}>
-            QR<span style={{ color: 'var(--accent-secondary)' }}>Flow</span>
+            dynamic<span style={{ color: 'var(--accent-secondary)' }}>QR</span>
           </span>
         </div>
 

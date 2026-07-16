@@ -129,6 +129,86 @@ app.post('/auth/logout', (req, res) => {
   res.json({ message: 'Logged out successfully' });
 });
 
+// Forgot Password
+app.post('/auth/forgot-password', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required' });
+  }
+
+  const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+  if (!gmailRegex.test(email)) {
+    return res.status(400).json({ message: 'Please enter a valid Gmail address (@gmail.com)' });
+  }
+
+  try {
+    const user = await db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+    if (!user) {
+      return res.status(404).json({ message: 'No user registered with this email address' });
+    }
+
+    // Generate 6-digit verification code
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString(); // 15 mins
+
+    // Insert reset record
+    const stmt = db.prepare('INSERT INTO password_resets (email, token, expires_at) VALUES (?, ?, ?)');
+    await stmt.run(email, verificationCode, expiresAt);
+
+    // Send email helper
+    const { sendPasswordResetEmail } = require('./utils/mailer');
+    await sendPasswordResetEmail(email, verificationCode);
+
+    res.json({ message: 'Verification code sent to your email successfully.' });
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    res.status(500).json({ message: 'Failed to process forgot password request' });
+  }
+});
+
+// Reset Password
+app.post('/auth/reset-password', async (req, res) => {
+  const { email, code, newPassword } = req.body;
+
+  if (!email || !code || !newPassword) {
+    return res.status(400).json({ message: 'All fields (email, code, newPassword) are required' });
+  }
+
+  try {
+    // Check if token exists, matches email, is not used, and not expired
+    const resetRecord = await db.prepare(
+      'SELECT * FROM password_resets WHERE email = ? AND token = ? AND used = 0 ORDER BY id DESC LIMIT 1'
+    ).get(email, code);
+
+    if (!resetRecord) {
+      return res.status(400).json({ message: 'Invalid or incorrect verification code' });
+    }
+
+    // Check expiration
+    if (new Date(resetRecord.expires_at) < new Date()) {
+      return res.status(400).json({ message: 'Verification code has expired' });
+    }
+
+    // Hash new password
+    const salt = bcrypt.genSaltSync(10);
+    const passwordHash = bcrypt.hashSync(newPassword, salt);
+
+    // Update user password
+    const updateStmt = db.prepare('UPDATE users SET password_hash = ? WHERE email = ?');
+    await updateStmt.run(passwordHash, email);
+
+    // Mark token as used
+    const markStmt = db.prepare('UPDATE password_resets SET used = 1 WHERE id = ?');
+    await markStmt.run(resetRecord.id);
+
+    res.json({ message: 'Password reset successful. You can now log in.' });
+  } catch (err) {
+    console.error('Reset password error:', err);
+    res.status(500).json({ message: 'Failed to reset password' });
+  }
+});
+
 // ---------------- QR MANAGEMENT ROUTES ----------------
 
 // Create QR

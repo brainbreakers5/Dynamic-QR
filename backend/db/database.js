@@ -128,6 +128,14 @@ const db = {
         scanned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(qr_id) REFERENCES qr_codes(id) ON DELETE CASCADE
       );
+
+      CREATE TABLE IF NOT EXISTS password_resets (
+        id SERIAL PRIMARY KEY,
+        email TEXT NOT NULL,
+        token TEXT NOT NULL,
+        expires_at TIMESTAMP NOT NULL,
+        used INTEGER DEFAULT 0
+      );
     `);
   },
 
@@ -170,6 +178,14 @@ const db = {
         referrer TEXT,
         scanned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(qr_id) REFERENCES qr_codes(id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE IF NOT EXISTS password_resets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT NOT NULL,
+        token TEXT NOT NULL,
+        expires_at DATETIME NOT NULL,
+        used INTEGER DEFAULT 0
       );
     `);
   },

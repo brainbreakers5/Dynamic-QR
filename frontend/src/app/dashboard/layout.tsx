@@ -75,7 +75,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </defs>
           </svg>
           <span style={{ fontSize: '1.1rem', fontWeight: 800, letterSpacing: '-0.02em' }}>
-            QR<span style={{ color: 'var(--accent-secondary)' }}>Flow</span>
+            dynamic<span style={{ color: 'var(--accent-secondary)' }}>QR</span>
           </span>
         </Link>
 
@@ -112,9 +112,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </linearGradient>
             </defs>
           </svg>
-          <span style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em' }}>
-            QR<span style={{ color: 'var(--accent-secondary)' }}>Flow</span>
-          </span>
+
         </Link>
 
         {/* Navigation Items */}
@@ -141,18 +139,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             Create QR Code
           </Link>
 
-          {user.role === 'admin' && (
-            <Link
-              href="/dashboard/admin"
-              className={`btn ${isLinkActive('/dashboard/admin') ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ justifyContent: 'flex-start', padding: '12px 16px' }}
-            >
-              <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-              Admin Panel
-            </Link>
-          )}
         </nav>
 
         {/* Footer Account Details */}
@@ -161,7 +147,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
             <span style={{ fontWeight: 650, fontSize: '0.95rem' }}>{user.name}</span>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', wordBreak: 'break-all' }}>{user.email}</span>
-            {user.role === 'admin' && <span className="badge badge-active" style={{ width: 'fit-content', marginTop: '6px', fontSize: '0.65rem' }}>Admin</span>}
           </div>
 
           <div style={{ display: 'flex', gap: '10px' }}>
