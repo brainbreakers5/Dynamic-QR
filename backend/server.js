@@ -157,10 +157,21 @@ app.post('/auth/forgot-password', async (req, res) => {
     await stmt.run(email, verificationCode, expiresAt);
 
     // Send email helper
-    const { sendPasswordResetEmail } = require('./utils/mailer');
-    await sendPasswordResetEmail(email, verificationCode);
-
-    res.json({ message: 'Verification code sent to your email successfully.' });
+    try {
+      const { sendPasswordResetEmail } = require('./utils/mailer');
+      await sendPasswordResetEmail(email, verificationCode);
+      res.json({ message: 'Verification code sent to your email successfully.' });
+    } catch (mailErr) {
+      console.error('Failed to send email:', mailErr);
+      const isSmtpConfigured = !!process.env.SMTP_HOST;
+      if (!isSmtpConfigured) {
+        return res.json({
+          message: 'SMTP not configured. Verification code (dev fallback):',
+          devCode: verificationCode
+        });
+      }
+      throw mailErr;
+    }
   } catch (err) {
     console.error('Forgot password error:', err);
     res.status(500).json({ message: 'Failed to process forgot password request' });

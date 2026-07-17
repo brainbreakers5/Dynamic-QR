@@ -1,5 +1,7 @@
 const nodemailer = require('nodemailer');
 
+let cachedTransporter = null;
+
 async function getTransporter() {
   const host = process.env.SMTP_HOST;
   const port = parseInt(process.env.SMTP_PORT || '587', 10);
@@ -15,18 +17,28 @@ async function getTransporter() {
     });
   }
 
+  if (cachedTransporter) {
+    return cachedTransporter;
+  }
+
   // Fallback: Ethereal Email for development/testing
   console.log('No SMTP config found in .env. Creating Ethereal test SMTP account...');
-  const testAccount = await nodemailer.createTestAccount();
-  return nodemailer.createTransport({
-    host: 'smtp.ethereal.email',
-    port: 587,
-    secure: false,
-    auth: {
-      user: testAccount.user,
-      pass: testAccount.pass
-    }
-  });
+  try {
+    const testAccount = await nodemailer.createTestAccount();
+    cachedTransporter = nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass
+      }
+    });
+    return cachedTransporter;
+  } catch (err) {
+    console.error('Failed to create Ethereal SMTP test account:', err);
+    throw err;
+  }
 }
 
 async function sendPasswordResetEmail(email, code) {

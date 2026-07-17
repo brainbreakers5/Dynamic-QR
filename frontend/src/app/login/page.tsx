@@ -71,8 +71,12 @@ function LoginContent() {
 
     setFormLoading(true);
     try {
-      await apiRequest('/auth/forgot-password', 'POST', { email });
-      showToast('Verification code sent successfully. Check your email.', 'success');
+      const res = await apiRequest('/auth/forgot-password', 'POST', { email });
+      if (res && res.devCode) {
+        showToast(`[Dev Fallback] Verification code: ${res.devCode}`, 'success');
+      } else {
+        showToast('Verification code sent successfully. Check your email.', 'success');
+      }
       setMode('forgot_verify');
     } catch (err: unknown) {
       const error = err as { message?: string };
