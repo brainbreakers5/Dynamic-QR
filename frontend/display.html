@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>dynamicQR - Code Scan</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/api.js"></script>
+</head>
+<body style="display: flex; height: 100vh; width: 100vw; justify-content: center; align-items: center; padding: 20px;">
+
+  <!-- Loading State -->
+  <div id="loader" class="shimmer-loading" style="width: 240px; height: 50px; border-radius: 8px;">
+    Loading QR Details...
+  </div>
+
+  <!-- Resolution Error Card -->
+  <div id="error-card" style="display: none; width: 100%; max-width: 400px; text-align: center;" class="glass-panel animate-fade-in">
+    <svg width="48" height="48" fill="none" stroke="var(--accent-error)" stroke-width="2" viewBox="0 0 24 24" style="margin-bottom: 16px;">
+      <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+    </svg>
+    <h3>QR Code Resolution Error</h3>
+    <p style="margin-top: 8px;" id="error-description">This QR code has been disabled, suspended, or does not exist.</p>
+  </div>
+
+  <!-- Display Content Card -->
+  <div id="content-card" style="display: none; width: 100%; max-width: 480px; flex-direction: column; gap: 24px;" class="glass-panel animate-fade-in">
+    
+    <!-- Branding Header -->
+    <div style="display: flex; justify-content: center; align-items: center; gap: 8px; border-bottom: 1px solid var(--glass-border); padding-bottom: 16px;">
+      <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="10" height="10" rx="2" stroke="url(#displayLogo)" stroke-width="3" />
+        <rect x="2" y="20" width="10" height="10" rx="2" stroke="url(#displayLogo)" stroke-width="3" />
+        <rect x="20" y="2" width="10" height="10" rx="2" stroke="url(#displayLogo)" stroke-width="3" />
+        <rect x="20" y="20" width="10" height="10" rx="2" fill="url(#displayLogo)" />
+        <defs>
+          <linearGradient id="displayLogo" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+            <stop stop-color="var(--accent-primary)" />
+            <stop offset="1" stop-color="var(--accent-secondary)" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <span style="font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em;">
+        dynamic<span style="color: var(--accent-secondary);">QR</span>
+      </span>
+    </div>
+
+    <!-- Target Content Container -->
+    <div id="type-content-target" style="display: flex; flex-direction: column; gap: 16px;">
+      <!-- Populated dynamically via JS -->
+    </div>
+  </div>
+
+  <script>
+    // Extract short ID from URL query ?shortId=abc or path /display/abc
+    function getShortId() {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('shortId')) return urlParams.get('shortId');
+      
+      // Vercel rewrite maps "/display/abc" -> "/display.html?shortId=abc"
+      // But in case the rewrite loses the query, extract from path
+      const pathParts = window.location.pathname.split('/');
+      return pathParts[pathParts.length - 1];
+    }
+
+    const shortId = getShortId();
+
+    async function loadPublicQr() {
+      const loader = document.getElementById('loader');
+      const errorCard = document.getElementById('error-card');
+      const contentCard = document.getElementById('content-card');
+      const targetDiv = document.getElementById('type-content-target');
+
+      if (!shortId || shortId === 'display.html') {
+        loader.style.display = 'none';
+        errorCard.style.display = 'block';
+        document.getElementById('error-description').innerText = 'No short link ID specified.';
+        return;
+      }
+
+      try {
+        const data = await apiRequest(`/api/qr/${shortId}`);
+        
+        // Handle URL Auto-Redirection
+        if (data.type === 'url') {
+          let targetUrl = typeof data.destination_content === 'object' ? data.destination_content.url : data.destination_content;
+          if (!/^https?:\/\//i.test(targetUrl)) {
+            targetUrl = 'http://' + targetUrl;
+          }
+          window.location.href = targetUrl;
+          return;
+        }
+
+        // Render card
+        loader.style.display = 'none';
+        contentCard.style.display = 'flex';
+        renderCardContent(data, targetDiv);
+
+      } catch (err) {
+        loader.style.display = 'none';
+        errorCard.style.display = 'block';
+        document.getElementById('error-description').innerText = err.message || 'This QR code has been disabled, suspended, or does not exist.';
+      }
+    }
+
+    // Clipboard copy helper
+    function copyText(text) {
+      navigator.clipboard.writeText(text);
+      showToast('Copied to clipboard!', 'success');
+    }
+
+    // Dynamic builders depending on category type
+    function renderCardContent(qr, container) {
+      const content = qr.destination_content || {};
+
+      switch (qr.type) {
+        case 'text':
+          const rawText = content.text || content;
+          container.innerHTML = `
+            <span class="badge badge-active" style="width: fit-content;">Plain Text</span>
+            <p style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border: 1px solid var(--glass-border); font-family: var(--font-mono); white-space: pre-wrap; word-break: break-word; color: var(--text-primary);">${rawText}</p>
+            <button class="btn btn-primary" id="btn-copy-text">Copy Text Content</button>
+          `;
+          document.getElementById('btn-copy-text').addEventListener('click', () => copyText(rawText));
+          break;
+
+        case 'phone':
+          container.innerHTML = `
+            <div style="text-align: center; display: flex; flex-direction: column; gap: 16px;">
+              <span class="badge badge-active" style="width: fit-content; margin: 0 auto;">Phone Number</span>
+              <h2 style="font-size: 1.75rem; font-family: var(--font-mono);">${content.phone}</h2>
+              <a href="tel:${content.phone}" class="btn btn-primary" style="margin-top: 8px;">Place Phone Call</a>
+            </div>
+          `;
+          break;
+
+        case 'sms':
+          container.innerHTML = `
+            <span class="badge badge-active" style="width: fit-content;">SMS Text Message</span>
+            <div>
+              <span style="color: var(--text-muted); font-size: 0.85rem;">Send to:</span>
+              <p style="font-size: 1.1rem; font-family: var(--font-mono); font-weight: 650;">${content.phone}</p>
+            </div>
+            <div>
+              <span style="color: var(--text-muted); font-size: 0.85rem;">Message Payload:</span>
+              <p style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border);">${content.message}</p>
+            </div>
+            <a href="sms:${content.phone}?body=${encodeURIComponent(content.message)}" class="btn btn-primary">Send SMS Now</a>
+          `;
+          break;
+
+        case 'email':
+          container.innerHTML = `
+            <span class="badge badge-active" style="width: fit-content;">Email Details</span>
+            <div>
+              <span style="color: var(--text-muted); font-size: 0.85rem;">Recipient:</span>
+              <p style="font-weight: 650;">${content.email}</p>
+            </div>
+            <div>
+              <span style="color: var(--text-muted); font-size: 0.85rem;">Subject:</span>
+              <p style="font-weight: 650;">${content.subject}</p>
+            </div>
+            ${content.body ? `
+              <div>
+                <span style="color: var(--text-muted); font-size: 0.85rem;">Message Body:</span>
+                <p style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border);">${content.body}</p>
+              </div>
+            ` : ''}
+            <a href="mailto:${content.email}?subject=${encodeURIComponent(content.subject)}&body=${encodeURIComponent(content.body || '')}" class="btn btn-primary">Draft Email Message</a>
+          `;
+          break;
+
+        case 'whatsapp':
+          container.innerHTML = `
+            <span class="badge badge-active" style="width: fit-content;">WhatsApp Chat</span>
+            <div>
+              <span style="color: var(--text-muted); font-size: 0.85rem;">Phone Number:</span>
+              <p style="font-weight: 650; font-family: var(--font-mono);">+${content.phone}</p>
+            </div>
+            ${content.message ? `
+              <div>
+                <span style="color: var(--text-muted); font-size: 0.85rem;">Prefilled Message:</span>
+                <p style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border);">${content.message}</p>
+              </div>
+            ` : ''}
+            <a href="https://wa.me/${content.phone}?text=${encodeURIComponent(content.message || '')}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Start WhatsApp Chat</a>
+          `;
+          break;
+
+        case 'wifi':
+          container.innerHTML = `
+            <span class="badge badge-active" style="width: fit-content;">Wi-Fi Access Portal</span>
+            <div>
+              <span style="color: var(--text-muted); font-size: 0.85rem;">SSID Network Name:</span>
+              <p style="font-size: 1.25rem; font-weight: 750;">${content.ssid}</p>
+            </div>
+            <div>
+              <span style="color: var(--text-muted); font-size: 0.85rem;">Security Protocol:</span>
+              <p style="text-transform: uppercase;">${content.encryption}</p>
+            </div>
+            ${content.password ? `
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <span style="color: var(--text-muted); font-size: 0.85rem;">Password:</span>
+                <div style="display: flex; gap: 8px;">
+                  <input type="password" id="inp-wifi-password" class="form-input" style="font-family: var(--font-mono); border: 1px dashed var(--glass-border);" value="${content.password}" readonly>
+                  <button class="btn btn-secondary" style="padding: 0 16px;" id="btn-copy-wifi">Copy</button>
+                </div>
+              </div>
+            ` : ''}
+            <p style="font-size: 0.8rem; color: var(--text-secondary); text-align: center; margin-top: 10px;">
+              Open Wi-Fi settings on your device, select <strong>${content.ssid}</strong>, and enter the password to connect.
+            </p>
+          `;
+          if (content.password) {
+            document.getElementById('btn-copy-wifi').addEventListener('click', () => copyText(content.password));
+          }
+          break;
+
+        case 'vcard':
+          container.innerHTML = `
+            <span class="badge badge-active" style="width: fit-content;">vCard Business Card</span>
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--accent-primary); display: flex; align-items: center; justify-content: center; fontSize: 1.5rem; font-weight: bold;">
+                ${content.firstName?.[0]?.toUpperCase() || 'C'}
+              </div>
+              <div>
+                <h3 style="font-size: 1.2rem;">${content.firstName || ''} ${content.lastName || ''}</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">${content.org || ''}</p>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem; border-top: 1px solid var(--glass-border); padding-top: 16px;">
+              ${content.phone ? `
+                <div>
+                  <span style="color: var(--text-muted); display: block; font-size: 0.75rem;">Mobile Phone</span>
+                  <a href="tel:${content.phone}" style="color: var(--accent-primary); font-weight: 650; text-decoration: none;">${content.phone}</a>
+                </div>
+              ` : ''}
+              ${content.email ? `
+                <div>
+                  <span style="color: var(--text-muted); display: block; font-size: 0.75rem;">Email Address</span>
+                  <a href="mailto:${content.email}" style="color: var(--accent-primary); font-weight: 650; text-decoration: none;">${content.email}</a>
+                </div>
+              ` : ''}
+              ${content.website ? `
+                <div>
+                  <span style="color: var(--text-muted); display: block; font-size: 0.75rem;">Website Portfolio</span>
+                  <a href="${content.website}" target="_blank" rel="noopener noreferrer" style="color: var(--accent-secondary); text-decoration: none;">${content.website}</a>
+                </div>
+              ` : ''}
+            </div>
+            <button id="btn-dl-vcard" class="btn btn-primary" style="margin-top: 8px;">Save Contact Card</button>
+          `;
+          document.getElementById('btn-dl-vcard').addEventListener('click', () => downloadVCard(content));
+          break;
+
+        case 'location':
+          const isCoords = content.latitude && content.longitude;
+          const mapsUrl = isCoords
+            ? `https://www.google.com/maps/search/?api=1&query=${content.latitude},${content.longitude}`
+            : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(content.address || '')}`;
+
+          container.innerHTML = `
+            <span class="badge badge-active" style="width: fit-content;">Google Maps Location</span>
+            ${content.address ? `
+              <div>
+                <span style="color: var(--text-muted); font-size: 0.85rem;">Location Target:</span>
+                <p style="font-weight: 650;">${content.address}</p>
+              </div>
+            ` : ''}
+            ${isCoords ? `
+              <div>
+                <span style="color: var(--text-muted); font-size: 0.85rem;">Coordinates:</span>
+                <p style="font-family: var(--font-mono); font-size: 0.9rem;">${content.latitude}, ${content.longitude}</p>
+              </div>
+            ` : ''}
+            <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="margin-top: 8px;">Open in Google Maps</a>
+          `;
+          break;
+
+        case 'event':
+          container.innerHTML = `
+            <span class="badge badge-active" style="width: fit-content;">Calendar Event Details</span>
+            <div>
+              <span style="color: var(--text-muted); font-size: 0.85rem;">Event Title:</span>
+              <h3 style="font-size: 1.25rem; margin-top: 2px;">${content.title}</h3>
+            </div>
+            <div class="responsive-grid-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div>
+                <span style="color: var(--text-muted); font-size: 0.75rem;">Start Time</span>
+                <p style="font-size: 0.9rem; font-weight: 600;">${content.start ? new Date(content.start).toLocaleString() : 'N/A'}</p>
+              </div>
+              <div>
+                <span style="color: var(--text-muted); font-size: 0.75rem;">End Time</span>
+                <p style="font-size: 0.9rem; font-weight: 600;">${content.end ? new Date(content.end).toLocaleString() : 'N/A'}</p>
+              </div>
+            </div>
+            ${content.location ? `
+              <div>
+                <span style="color: var(--text-muted); font-size: 0.85rem;">Location / Venue:</span>
+                <p style="font-size: 0.9rem;">${content.location}</p>
+              </div>
+            ` : ''}
+            <button id="btn-dl-ics" class="btn btn-primary" style="margin-top: 8px;">Add to Calendar (.ics)</button>
+          `;
+          document.getElementById('btn-dl-ics').addEventListener('click', () => downloadICS(content));
+          break;
+      }
+    }
+
+    // Dynamic vCard download builder
+    function downloadVCard(content) {
+      const vcardText = [
+        'BEGIN:VCARD',
+        'VERSION:3.0',
+        `N:${content.lastName || ''};${content.firstName || ''};;;`,
+        `FN:${content.firstName || ''} ${content.lastName || ''}`,
+        content.org ? `ORG:${content.org}` : '',
+        content.phone ? `TEL;TYPE=CELL:${content.phone}` : '',
+        content.email ? `EMAIL;TYPE=PREF,INTERNET:${content.email}` : '',
+        content.website ? `URL:${content.website}` : '',
+        content.note ? `NOTE:${content.note}` : '',
+        'END:VCARD'
+      ].filter(Boolean).join('\r\n');
+
+      const blob = new Blob([vcardText], { type: 'text/vcard;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${content.firstName || 'contact'}.vcf`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('Contact card downloaded successfully.', 'success');
+    }
+
+    // Dynamic iCalendar builder
+    function downloadICS(content) {
+      const formatICSDate = (dateStr) => {
+        if (!dateStr) return '';
+        const d = new Date(dateStr);
+        return d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      };
+
+      const start = formatICSDate(content.start);
+      const end = formatICSDate(content.end);
+
+      const icsLines = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//dynamicQR//Dynamic Event//EN',
+        'BEGIN:VEVENT',
+        `SUMMARY:${content.title || 'Event'}`,
+        start ? `DTSTART:${start}` : '',
+        end ? `DTEND:${end}` : '',
+        content.location ? `LOCATION:${content.location}` : '',
+        content.description ? `DESCRIPTION:${content.description}` : '',
+        'STATUS:CONFIRMED',
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ].filter(Boolean).join('\r\n');
+
+      const blob = new Blob([icsLines], { type: 'text/calendar;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${content.title || 'event'}.ics`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('Event calendar file downloaded.', 'success');
+    }
+
+    // Start
+    loadPublicQr();
+  </script>
+</body>
+</html>

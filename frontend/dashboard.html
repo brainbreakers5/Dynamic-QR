@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>dynamicQR - Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/api.js"></script>
+  <!-- CDNs for QR rendering and PDF export -->
+  <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- Mobile Header -->
+  <div class="dashboard-mobile-header">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="10" height="10" rx="2" stroke="url(#logoGrad)" stroke-width="3" />
+        <rect x="20" y="2" width="10" height="10" rx="2" stroke="url(#logoGrad)" stroke-width="3" />
+        <rect x="2" y="20" width="10" height="10" rx="2" stroke="url(#logoGrad)" stroke-width="3" />
+        <rect x="20" y="20" width="10" height="10" rx="2" fill="url(#logoGrad)" />
+      </svg>
+      <span style="font-size: 1.15rem; font-weight: 800;">dynamicQR</span>
+    </div>
+    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" id="toggle-mobile-sidebar">Menu</button>
+  </div>
+
+  <div class="dashboard-wrapper">
+    <!-- Sidebar Navigation -->
+    <div class="dashboard-sidebar glass-panel" id="sidebar">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="10" height="10" rx="2" stroke="url(#logoGrad)" stroke-width="3" />
+          <rect x="20" y="2" width="10" height="10" rx="2" stroke="url(#logoGrad)" stroke-width="3" />
+          <rect x="2" y="20" width="10" height="10" rx="2" stroke="url(#logoGrad)" stroke-width="3" />
+          <rect x="20" y="20" width="10" height="10" rx="2" fill="url(#logoGrad)" />
+        </svg>
+        <span style="font-size: 1.25rem; font-weight: 800; letter-spacing: -0.02em;">
+          dynamic<span style="color: var(--accent-secondary);">QR</span>
+        </span>
+      </div>
+
+      <nav style="display: flex; flex-direction: column; gap: 16px; margin-top: 10px;">
+        <a href="/dashboard" class="nav-link active" style="font-weight: 600; padding: 8px 0; display: flex; align-items: center; gap: 8px;">
+          📊 Dashboard
+        </a>
+        <a href="/dashboard/new" class="nav-link" style="font-weight: 600; padding: 8px 0; display: flex; align-items: center; gap: 8px;">
+          ➕ New QR Code
+        </a>
+        <a href="/dashboard/admin" class="nav-link" id="admin-sidebar-link" style="display: none; font-weight: 600; padding: 8px 0; display: none; align-items: center; gap: 8px;">
+          ⚙️ Admin Panel
+        </a>
+      </nav>
+
+      <!-- Profile Section -->
+      <div style="margin-top: auto; border-top: 1px solid var(--glass-border); padding-top: 16px; display: flex; flex-direction: column; gap: 12px;">
+        <div>
+          <p style="font-weight: 700; color: var(--text-primary); font-size: 0.95rem;" id="user-display-name">User Name</p>
+          <p style="font-size: 0.8rem; color: var(--text-muted);" id="user-display-email">email@domain.com</p>
+          <span class="badge badge-active" style="font-size: 0.6rem; margin-top: 4px; display: inline-block; padding: 2px 6px;" id="user-display-role">user</span>
+        </div>
+        <button class="btn btn-secondary" style="width: 100%; padding: 10px;" id="logout-btn">
+          🚪 Logout
+        </button>
+      </div>
+    </div>
+
+    <!-- Sidebar overlay for responsive mobile view -->
+    <div class="dashboard-sidebar-overlay" id="sidebar-overlay" style="display: none;"></div>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+      <div style="display: flex; flex-direction: column; gap: 32px;" class="animate-fade-in">
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <h1 style="font-size: 2.25rem; margin-bottom: 4px;">Dashboard</h1>
+            <p>Create, manage, and monitor your dynamic QR code performance</p>
+          </div>
+          <a href="/dashboard/new" class="btn btn-primary">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path d="M12 4v16m8-8H4" />
+            </svg>
+            New QR Code
+          </a>
+        </div>
+
+        <!-- Stats Board -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px;">
+          <div class="glass-panel" style="display: flex; flex-direction: column; gap: 8px;">
+            <span style="color: var(--text-secondary); font-weight: 600; font-size: 0.9rem;">Total QR Codes</span>
+            <span style="font-size: 2.5rem; font-weight: 800;" id="kpi-total">...</span>
+          </div>
+
+          <div class="glass-panel" style="display: flex; flex-direction: column; gap: 8px;">
+            <span style="color: var(--text-secondary); font-weight: 600; font-size: 0.9rem;">Active QR Codes</span>
+            <span style="font-size: 2.5rem; font-weight: 800; color: var(--accent-primary);" id="kpi-active">...</span>
+          </div>
+
+          <div class="glass-panel" style="display: flex; flex-direction: column; gap: 8px;">
+            <span style="color: var(--text-secondary); font-weight: 600; font-size: 0.9rem;">Total Scan Activity</span>
+            <span style="font-size: 2.5rem; font-weight: 800; color: var(--accent-secondary);" id="kpi-scans">...</span>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="glass-panel" style="display: flex; flex-direction: column; gap: 20px;">
+          <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+            <!-- Search -->
+            <div style="flex: 1; min-width: 240px;">
+              <input type="text" id="search-input" placeholder="Search by ID, type, content..." class="form-input">
+            </div>
+
+            <!-- Folder Filter -->
+            <div style="width: 180px;">
+              <select id="folder-filter" class="form-input form-select">
+                <option value="All">All Folders</option>
+              </select>
+            </div>
+
+            <!-- Favorites Toggle -->
+            <button id="favorites-filter-btn" class="btn btn-secondary" style="padding: 12px 16px;">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" id="fav-filter-icon">
+                <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.907c.961 0 1.36 1.246.588 1.81l-3.974 2.89a1 1 0 00-.364 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.88a1 1 0 00-1.176 0l-3.976 2.88c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.364-1.118L2.05 11.1c-.771-.563-.372-1.81.587-1.81H7.3c.365 0 .685-.246.8-.69l1.52-4.674z" />
+              </svg>
+              Favorites Only
+            </button>
+          </div>
+
+          <!-- Status Tabs -->
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--glass-border); padding-top: 16px;">
+            <button id="tab-active" class="btn btn-secondary active-tab" style="border: 1px solid var(--accent-primary); background: rgba(124, 77, 255, 0.08); color: var(--accent-primary); padding: 8px 16px; font-size: 0.85rem;">
+              Active QRs (<span id="count-active">0</span>)
+            </button>
+            <button id="tab-archived" class="btn" style="padding: 8px 16px; font-size: 0.85rem; color: var(--text-secondary); background: transparent;">
+              Archived QRs (<span id="count-archived">0</span>)
+            </button>
+            <button id="tab-deleted" class="btn" style="padding: 8px 16px; font-size: 0.85rem; color: var(--text-secondary); background: transparent;">
+              Trash (<span id="count-deleted">0</span>)
+            </button>
+          </div>
+        </div>
+
+        <!-- Grid -->
+        <div id="qrs-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
+          <!-- Skeleton items or loaded QR cards -->
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const auth = checkAuth(); // Redirect to login if not authenticated
+    if (!auth) throw new Error("Auth required");
+
+    // Populate user profile info in sidebar
+    document.getElementById('user-display-name').innerText = auth.user.name;
+    document.getElementById('user-display-email').innerText = auth.user.email;
+    document.getElementById('user-display-role').innerText = auth.user.role;
+    if (auth.user.role === 'admin') {
+      const adminLink = document.getElementById('admin-sidebar-link');
+      adminLink.style.display = 'flex';
+    }
+
+    // Sidebar Mobile triggers
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    document.getElementById('toggle-mobile-sidebar').addEventListener('click', () => {
+      sidebar.classList.add('open');
+      overlay.style.display = 'block';
+    });
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      overlay.style.display = 'none';
+    });
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      localStorage.removeItem('qr_auth_token');
+      localStorage.removeItem('qr_user');
+      window.location.href = '/login';
+    });
+
+    // State Variables
+    let qrsList = [];
+    let search = '';
+    let selectedFolder = 'All';
+    let selectedStatus = 'active';
+    let favoritesOnly = false;
+
+    // Fetch and Load QRs
+    async function loadQrs() {
+      const grid = document.getElementById('qrs-grid');
+      grid.innerHTML = `
+        <div class="glass-panel shimmer-loading" style="height: 300px;"></div>
+        <div class="glass-panel shimmer-loading" style="height: 300px;"></div>
+        <div class="glass-panel shimmer-loading" style="height: 300px;"></div>
+      `;
+
+      try {
+        qrsList = await apiRequest('/qr/list');
+        renderStats();
+        renderFolderFilter();
+        renderQrs();
+      } catch (err) {
+        showToast(err.message || 'Failed to retrieve QR codes.', 'error');
+      }
+    }
+
+    // Dynamic stats and folder selector population
+    function renderStats() {
+      const totalQrs = qrsList.filter(qr => qr.status !== 'deleted').length;
+      const activeQrs = qrsList.filter(qr => qr.status === 'active').length;
+      const totalScans = qrsList.reduce((acc, curr) => acc + curr.scan_count, 0);
+
+      document.getElementById('kpi-total').innerText = totalQrs;
+      document.getElementById('kpi-active').innerText = activeQrs;
+      document.getElementById('kpi-scans').innerText = totalScans;
+
+      document.getElementById('count-active').innerText = qrsList.filter(q => q.status === 'active').length;
+      document.getElementById('count-archived').innerText = qrsList.filter(q => q.status === 'archived').length;
+      document.getElementById('count-deleted').innerText = qrsList.filter(q => q.status === 'deleted').length;
+    }
+
+    function renderFolderFilter() {
+      const folderFilter = document.getElementById('folder-filter');
+      const folders = Array.from(new Set(qrsList.map(qr => qr.folder || 'General')));
+      
+      // Save current selection
+      const currentSelection = selectedFolder;
+      
+      folderFilter.innerHTML = '<option value="All">All Folders</option>';
+      folders.forEach(f => {
+        folderFilter.innerHTML += `<option value="${f}">${f}</option>`;
+      });
+      
+      folderFilter.value = currentSelection;
+    }
+
+    // Main Renderer
+    function renderQrs() {
+      const grid = document.getElementById('qrs-grid');
+      
+      const filtered = qrsList.filter(qr => {
+        if (qr.status !== selectedStatus) return false;
+        if (selectedFolder !== 'All' && qr.folder !== selectedFolder) return false;
+        if (favoritesOnly && qr.is_favorite !== 1) return false;
+        
+        if (search.trim() !== '') {
+          const q = search.toLowerCase();
+          const contentMatch = typeof qr.destination_content === 'string'
+            ? qr.destination_content.toLowerCase().includes(q)
+            : JSON.stringify(qr.destination_content).toLowerCase().includes(q);
+          
+          return (
+            qr.short_id.toLowerCase().includes(q) ||
+            qr.type.toLowerCase().includes(q) ||
+            qr.folder.toLowerCase().includes(q) ||
+            contentMatch
+          );
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="glass-panel" style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;">
+            <svg width="48" height="48" fill="none" stroke="var(--text-muted)" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom: 16px;">
+              <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <h3 style="font-size: 1.25rem; margin-bottom: 8px;">No QR Codes Found</h3>
+            <p>No QR codes match your selected filter criteria. Try updating search tags or creating a new QR code.</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = '';
+      filtered.forEach(qr => {
+        let destPreview = '';
+        if (qr.type === 'url') {
+          destPreview = qr.destination_content?.url || qr.destination_content;
+        } else if (qr.type === 'text') {
+          destPreview = qr.destination_content?.text || qr.destination_content;
+        } else {
+          destPreview = `${qr.type.toUpperCase()} content`;
+        }
+
+        const isDeleted = qr.status === 'deleted';
+        const isArchived = qr.status === 'archived';
+
+        const card = document.createElement('div');
+        card.className = 'glass-panel';
+        card.style.display = 'flex';
+        card.style.flexDirection = 'column';
+        card.style.gap = '20px';
+        card.style.position = 'relative';
+
+        card.innerHTML = `
+          <!-- Favorite Star Button -->
+          ${!isDeleted ? `
+            <button class="fav-btn" style="position: absolute; top: 16px; right: 16px; background: transparent; border: none; cursor: pointer; color: ${qr.is_favorite ? 'var(--accent-warning)' : 'var(--text-muted)'};" title="${qr.is_favorite ? 'Remove from Favorites' : 'Add to Favorites'}">
+              <svg width="22" height="22" fill="${qr.is_favorite ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.907c.961 0 1.36 1.246.588 1.81l-3.974 2.89a1 1 0 00-.364 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.88a1 1 0 00-1.176 0l-3.976 2.88c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.364-1.118L2.05 11.1c-.771-.563-.372-1.81.587-1.81H7.3c.365 0 .685-.246.8-.69l1.52-4.674z" />
+              </svg>
+            </button>
+          ` : ''}
+
+          <!-- QR Canvas -->
+          <div style="height: 160px; display: flex; align-items: center; justify-content: center; background: #ffffff; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); width: fit-content; margin: 0 auto; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" id="canvas-${qr.short_id}"></div>
+
+          <!-- Info Details -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <span style="font-size: 1rem; font-weight: 700; font-family: var(--font-mono);">${qr.short_id}</span>
+              <span class="badge" style="font-size: 0.65rem; background: var(--bg-tertiary); color: var(--text-primary);">${qr.type}</span>
+              <span class="badge" style="font-size: 0.65rem; background: rgba(124, 77, 255, 0.1); color: var(--accent-primary);">${qr.folder}</span>
+            </div>
+
+            <div style="font-size: 0.85rem; color: var(--text-secondary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="${destPreview}">
+              <strong>Destination:</strong> ${destPreview}
+            </div>
+
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--glass-border); padding-top: 10px;">
+              <span>Scans: <strong>${qr.scan_count}</strong></span>
+              <span>Updated: ${new Date(qr.updated_at).toLocaleDateString()}</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-top: auto;">
+            ${isDeleted ? `
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-secondary restore-btn" style="flex: 1; padding: 8px;">Restore</button>
+                <button class="btn btn-danger purge-btn" style="flex: 1; padding: 8px;">Purge</button>
+              </div>
+            ` : `
+              <div style="display: flex; gap: 8px;">
+                <a href="/dashboard/edit/${qr.id}" class="btn btn-secondary" style="flex: 1; padding: 8px; font-size: 0.85rem;">Edit</a>
+                <a href="/dashboard/analytics/${qr.id}" class="btn btn-secondary" style="flex: 1; padding: 8px; font-size: 0.85rem; border-color: rgba(0, 230, 118, 0.25);">Stats</a>
+              </div>
+              <div style="display: flex; gap: 6px;">
+                <button class="btn btn-secondary dl-png" style="flex: 1; padding: 8px; font-size: 0.8rem;">PNG</button>
+                <button class="btn btn-secondary dl-svg" style="flex: 1; padding: 8px; font-size: 0.8rem;">SVG</button>
+                <button class="btn btn-primary dl-pdf" style="flex: 1; padding: 8px; font-size: 0.8rem;">PDF</button>
+              </div>
+            `}
+          </div>
+
+          <!-- Context Options menu -->
+          ${!isDeleted ? `
+            <div style="display: flex; gap: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; justify-content: flex-end; font-size: 0.75rem;">
+              <button class="dup-btn" style="background: none; border: none; color: var(--text-muted); cursor: pointer;">Duplicate</button>
+              <span>•</span>
+              <button class="archive-btn" style="background: none; border: none; color: var(--text-muted); cursor: pointer;">
+                ${isArchived ? 'Unarchive' : 'Archive'}
+              </button>
+              <span>•</span>
+              <button class="trash-btn" style="background: none; border: none; color: var(--accent-error); cursor: pointer;">Trash</button>
+            </div>
+          ` : ''}
+        `;
+
+        grid.appendChild(card);
+
+        // Render QR Code inside Card
+        const qrCanvas = new QRCodeStyling({
+          width: 120,
+          height: 120,
+          data: `${API_URL}/qr/${qr.short_id}`,
+          margin: 4,
+          qrOptions: {
+            typeNumber: 0,
+            mode: 'Byte',
+            errorCorrectionLevel: qr.customization_settings?.errorCorrectionLevel || 'Q',
+          },
+          dotsOptions: qr.customization_settings?.dotsOptions || { color: '#000000', type: 'square' },
+          backgroundOptions: qr.customization_settings?.backgroundOptions || { color: '#ffffff' },
+          cornersSquareOptions: qr.customization_settings?.cornersSquareOptions || { color: '#000000', type: 'square' },
+          cornersDotOptions: qr.customization_settings?.cornersDotOptions || { color: '#000000', type: 'square' },
+          imageOptions: qr.customization_settings?.imageOptions || { hideBackgroundDots: true, imageSize: 0.4, margin: 5 },
+          image: qr.customization_settings?.logo || undefined,
+        });
+        qrCanvas.append(document.getElementById(`canvas-${qr.short_id}`));
+
+        // Hook up Action Listeners
+        if (!isDeleted) {
+          card.querySelector('.fav-btn').addEventListener('click', () => toggleFavorite(qr));
+          card.querySelector('.dl-png').addEventListener('click', () => qrCanvas.download({ name: `qr-${qr.short_id}`, extension: 'png' }));
+          card.querySelector('.dl-svg').addEventListener('click', () => qrCanvas.download({ name: `qr-${qr.short_id}`, extension: 'svg' }));
+          card.querySelector('.dl-pdf').addEventListener('click', () => downloadPDF(qr, qrCanvas));
+          card.querySelector('.dup-btn').addEventListener('click', () => duplicateQr(qr.id));
+          card.querySelector('.archive-btn').addEventListener('click', () => toggleArchive(qr));
+          card.querySelector('.trash-btn').addEventListener('click', () => deleteQr(qr.id));
+        } else {
+          card.querySelector('.restore-btn').addEventListener('click', () => restoreQr(qr.id));
+          card.querySelector('.purge-btn').addEventListener('click', () => purgeQr(qr.id));
+        }
+      });
+    }
+
+    // CRUD Handlers
+    async function toggleFavorite(qr) {
+      const nextFav = qr.is_favorite === 1 ? 0 : 1;
+      try {
+        await apiRequest(`/qr/${qr.id}`, 'PUT', { is_favorite: nextFav });
+        showToast(nextFav ? 'Added to favorites.' : 'Removed from favorites.', 'success');
+        loadQrs();
+      } catch (err) {
+        showToast(err.message || 'Error setting favorite status', 'error');
+      }
+    }
+
+    async function toggleArchive(qr) {
+      const nextStatus = qr.status === 'archived' ? 'active' : 'archived';
+      try {
+        await apiRequest(`/qr/${qr.id}`, 'PUT', { status: nextStatus });
+        showToast(nextStatus === 'archived' ? 'QR code archived.' : 'QR code unarchived.', 'success');
+        loadQrs();
+      } catch (err) {
+        showToast(err.message || 'Error archiving QR code', 'error');
+      }
+    }
+
+    async function deleteQr(id) {
+      try {
+        await apiRequest(`/qr/${id}`, 'DELETE');
+        showToast('QR code moved to trash.', 'success');
+        loadQrs();
+      } catch (err) {
+        showToast(err.message || 'Error deleting QR code', 'error');
+      }
+    }
+
+    async function restoreQr(id) {
+      try {
+        await apiRequest(`/qr/${id}`, 'PUT', { status: 'active' });
+        showToast('QR code restored successfully.', 'success');
+        loadQrs();
+      } catch (err) {
+        showToast(err.message || 'Error restoring QR code', 'error');
+      }
+    }
+
+    async function purgeQr(id) {
+      if (!confirm('Are you sure you want to permanently delete this QR code? This will also purge all its scan history and redirection records.')) {
+        return;
+      }
+      try {
+        await apiRequest(`/qr/${id}?permanent=true`, 'DELETE');
+        showToast('QR code deleted permanently.', 'success');
+        loadQrs();
+      } catch (err) {
+        showToast(err.message || 'Error deleting QR code', 'error');
+      }
+    }
+
+    async function duplicateQr(id) {
+      try {
+        await apiRequest(`/qr/${id}/duplicate`, 'POST');
+        showToast('QR code duplicated successfully!', 'success');
+        loadQrs();
+      } catch (err) {
+        showToast(err.message || 'Error duplicating QR code', 'error');
+      }
+    }
+
+    // PDF Report Generator
+    async function downloadPDF(qr, qrCanvas) {
+      try {
+        const { jsPDF } = window.jspdf;
+        const tempDiv = document.createElement('div');
+        
+        // Render a high-res temporary copy of QR styling for PDF insertion
+        const highResQr = new QRCodeStyling({
+          width: 800,
+          height: 800,
+          data: `${API_URL}/qr/${qr.short_id}`,
+          margin: 10,
+          qrOptions: qrCanvas._options.qrOptions,
+          dotsOptions: qrCanvas._options.dotsOptions,
+          backgroundOptions: qrCanvas._options.backgroundOptions,
+          cornersSquareOptions: qrCanvas._options.cornersSquareOptions,
+          cornersDotOptions: qrCanvas._options.cornersDotOptions,
+          imageOptions: qrCanvas._options.imageOptions,
+          image: qrCanvas._options.image
+        });
+        highResQr.append(tempDiv);
+
+        setTimeout(() => {
+          const canvas = tempDiv.querySelector('canvas');
+          if (canvas) {
+            const imgData = canvas.toDataURL('image/png');
+            const doc = new jsPDF();
+            
+            // Dark premium header matching system colors
+            doc.setFillColor(18, 14, 34);
+            doc.rect(0, 0, 210, 297, 'F');
+            
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(22);
+            doc.text('dynamicQR PDF Export', 105, 30, { align: 'center' });
+            
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(163, 158, 185);
+            doc.text(`Short Redirect URL: ${API_URL}/qr/${qr.short_id}`, 105, 42, { align: 'center' });
+            doc.text(`Content Type: ${qr.type.toUpperCase()}`, 105, 50, { align: 'center' });
+            doc.text(`Total Scans: ${qr.scan_count}`, 105, 58, { align: 'center' });
+
+            doc.addImage(imgData, 'PNG', 45, 75, 120, 120);
+
+            doc.setFontSize(10);
+            doc.text('Scanned dynamic QR codes redirect to the configured destination instantly.', 105, 220, { align: 'center' });
+            doc.text(`Generated on ${new Date().toLocaleString()}`, 105, 230, { align: 'center' });
+            
+            doc.save(`qr-report-${qr.short_id}.pdf`);
+            showToast('QR Code report downloaded as PDF', 'success');
+          } else {
+            showToast('Failed to parse QR vector canvas', 'error');
+          }
+        }, 500);
+      } catch (err) {
+        showToast('Error exporting PDF', 'error');
+      }
+    }
+
+    // Filter Listeners
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      search = e.target.value;
+      renderQrs();
+    });
+
+    document.getElementById('folder-filter').addEventListener('change', (e) => {
+      selectedFolder = e.target.value;
+      renderQrs();
+    });
+
+    const favFilterBtn = document.getElementById('favorites-filter-btn');
+    const favIcon = document.getElementById('fav-filter-icon');
+    favFilterBtn.addEventListener('click', () => {
+      favoritesOnly = !favoritesOnly;
+      if (favoritesOnly) {
+        favFilterBtn.classList.remove('btn-secondary');
+        favFilterBtn.classList.add('btn-primary');
+        favIcon.setAttribute('fill', 'currentColor');
+      } else {
+        favFilterBtn.classList.remove('btn-primary');
+        favFilterBtn.classList.add('btn-secondary');
+        favIcon.setAttribute('fill', 'none');
+      }
+      renderQrs();
+    });
+
+    // Tab Listeners
+    const tabs = {
+      active: document.getElementById('tab-active'),
+      archived: document.getElementById('tab-archived'),
+      deleted: document.getElementById('tab-deleted')
+    };
+
+    function resetTabStyles() {
+      Object.keys(tabs).forEach(k => {
+        tabs[k].style.background = 'transparent';
+        tabs[k].style.border = 'none';
+        tabs[k].style.color = 'var(--text-secondary)';
+      });
+    }
+
+    tabs.active.addEventListener('click', () => {
+      selectedStatus = 'active';
+      resetTabStyles();
+      tabs.active.style.border = '1px solid var(--accent-primary)';
+      tabs.active.style.background = 'rgba(124, 77, 255, 0.08)';
+      tabs.active.style.color = 'var(--accent-primary)';
+      renderQrs();
+    });
+
+    tabs.archived.addEventListener('click', () => {
+      selectedStatus = 'archived';
+      resetTabStyles();
+      tabs.archived.style.border = '1px solid var(--accent-warning)';
+      tabs.archived.style.background = 'rgba(255, 214, 0, 0.08)';
+      tabs.archived.style.color = 'var(--accent-warning)';
+      renderQrs();
+    });
+
+    tabs.deleted.addEventListener('click', () => {
+      selectedStatus = 'deleted';
+      resetTabStyles();
+      tabs.deleted.style.border = '1px solid var(--accent-error)';
+      tabs.deleted.style.background = 'rgba(255, 23, 68, 0.08)';
+      tabs.deleted.style.color = 'var(--accent-error)';
+      renderQrs();
+    });
+
+    // Initial Load
+    loadQrs();
+  </script>
+</body>
+</html>

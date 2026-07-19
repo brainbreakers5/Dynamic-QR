@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;850&family=JetBrains+Mono:wght@400;600&display=swap');
+
 /* Premium Design System - dynamicQR CSS Variables & Base Styles */
 
 :root {
@@ -32,8 +34,8 @@
   --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 
-  --font-main: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: var(--font-geist-mono), monospace;
+  --font-main: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
 /* Light Theme Variables */
@@ -333,6 +335,7 @@ p {
 .nav-link {
   color: var(--text-secondary);
   transition: color var(--transition-fast);
+  text-decoration: none;
 }
 
 .nav-link:hover, .nav-link.active {
@@ -372,6 +375,7 @@ p {
   margin-left: auto;
   cursor: pointer;
   color: var(--text-muted);
+  font-size: 1.2rem;
 }
 .toast-close:hover {
   color: var(--text-primary);
@@ -395,7 +399,6 @@ p {
     display: flex !important;
   }
   
-  /* Make grid containers stack on mobile */
   .responsive-grid-2col {
     grid-template-columns: 1fr !important;
     gap: 20px !important;
@@ -504,5 +507,3 @@ p {
     max-height: none;
   }
 }
-
-

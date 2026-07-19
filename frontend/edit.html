@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>dynamicQR - Edit QR Code</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/api.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+</head>
+<body>
+
+  <!-- Mobile Header -->
+  <div class="dashboard-mobile-header">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="10" height="10" rx="2" stroke="url(#logoGrad)" stroke-width="3" />
+        <rect x="20" y="2" width="10" height="10" rx="2" stroke="url(#logoGrad)" stroke-width="3" />
+        <rect x="2" y="20" width="10" height="10" rx="2" stroke="url(#logoGrad)" stroke-width="3" />
+        <rect x="20" y="20" width="10" height="10" rx="2" fill="url(#logoGrad)" />
+      </svg>
+      <span style="font-size: 1.15rem; font-weight: 800;">dynamicQR</span>
+    </div>
+    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" id="toggle-mobile-sidebar">Menu</button>
+  </div>
+
+  <div class="dashboard-wrapper">
+    <!-- Sidebar Navigation -->
+    <div class="dashboard-sidebar glass-panel" id="sidebar">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="10" height="10" rx="2" stroke="url(#logoGrad)" stroke-width="3" />
+          <rect x="20" y="2" width="10" height="10" rx="2" stroke="url(#logoGrad)" stroke-width="3" />
+          <rect x="2" y="20" width="10" height="10" rx="2" stroke="url(#logoGrad)" stroke-width="3" />
+          <rect x="20" y="20" width="10" height="10" rx="2" fill="url(#logoGrad)" />
+        </svg>
+        <span style="font-size: 1.25rem; font-weight: 800; letter-spacing: -0.02em;">
+          dynamic<span style="color: var(--accent-secondary);">QR</span>
+        </span>
+      </div>
+
+      <nav style="display: flex; flex-direction: column; gap: 16px; margin-top: 10px;">
+        <a href="/dashboard" class="nav-link" style="font-weight: 600; padding: 8px 0; display: flex; align-items: center; gap: 8px;">
+          📊 Dashboard
+        </a>
+        <a href="/dashboard/new" class="nav-link" style="font-weight: 600; padding: 8px 0; display: flex; align-items: center; gap: 8px;">
+          ➕ New QR Code
+        </a>
+        <a href="/dashboard/admin" class="nav-link" id="admin-sidebar-link" style="display: none; font-weight: 600; padding: 8px 0; display: none; align-items: center; gap: 8px;">
+          ⚙️ Admin Panel
+        </a>
+      </nav>
+
+      <!-- Profile Section -->
+      <div style="margin-top: auto; border-top: 1px solid var(--glass-border); padding-top: 16px; display: flex; flex-direction: column; gap: 12px;">
+        <div>
+          <p style="font-weight: 700; color: var(--text-primary); font-size: 0.95rem;" id="user-display-name">User Name</p>
+          <p style="font-size: 0.8rem; color: var(--text-muted);" id="user-display-email">email@domain.com</p>
+          <span class="badge badge-active" style="font-size: 0.6rem; margin-top: 4px; display: inline-block; padding: 2px 6px;" id="user-display-role">user</span>
+        </div>
+        <button class="btn btn-secondary" style="width: 100%; padding: 10px;" id="logout-btn">
+          🚪 Logout
+        </button>
+      </div>
+    </div>
+
+    <!-- Sidebar overlay -->
+    <div class="dashboard-sidebar-overlay" id="sidebar-overlay" style="display: none;"></div>
+
+    <!-- Main Content -->
+    <main class="dashboard-main animate-fade-in">
+      <div style="display: flex; flex-direction: column; gap: 32px;" id="main-edit-container">
+        <div>
+          <h1 style="font-size: 2.25rem; margin-bottom: 4px;">Edit QR Code</h1>
+          <p>Modify destination settings or customize your dynamic QR styling</p>
+        </div>
+
+        <div class="responsive-grid-2col" style="display: grid; grid-template-columns: 1fr 340px; gap: 32px; align-items: start;">
+          <!-- Left side: Form -->
+          <form id="edit-qr-form" class="glass-panel" style="display: flex; flex-direction: column; gap: 24px;">
+            <!-- Category Type Selector (disabled since type shouldn't change for live stats consistency) -->
+            <div class="form-group">
+              <label class="form-label" for="qr-type">QR Type / Category</label>
+              <select id="qr-type" class="form-input form-select" disabled style="text-transform: capitalize; opacity: 0.7;"></select>
+            </div>
+
+            <!-- Folder Category -->
+            <div class="form-group">
+              <label class="form-label" for="folder">Folder / Category Organization</label>
+              <input type="text" id="folder" placeholder="e.g. Marketing" class="form-input">
+            </div>
+
+            <!-- Destination Inputs Accordion Container -->
+            <div style="border-top: 1px solid var(--glass-border); padding-top: 20px;">
+              <h3 style="font-size: 1.15rem; margin-bottom: 16px; color: var(--accent-secondary);">Destination Target Content</h3>
+
+              <!-- URL Input Div -->
+              <div id="div-url" class="type-input-div" style="display: none;">
+                <div class="form-group">
+                  <label class="form-label" for="inp-url">Website URL</label>
+                  <input type="url" id="inp-url" placeholder="https://example.com" class="form-input">
+                </div>
+              </div>
+
+              <!-- Text Input Div -->
+              <div id="div-text" class="type-input-div" style="display: none;">
+                <div class="form-group">
+                  <label class="form-label" for="inp-text">Plain Text Message</label>
+                  <textarea id="inp-text" placeholder="Type raw text..." class="form-input" rows="4"></textarea>
+                </div>
+              </div>
+
+              <!-- Phone Input Div -->
+              <div id="div-phone" class="type-input-div" style="display: none;">
+                <div class="form-group">
+                  <label class="form-label" for="inp-phone">Phone Number</label>
+                  <input type="tel" id="inp-phone" placeholder="+1234567890" class="form-input">
+                </div>
+              </div>
+
+              <!-- SMS Input Div -->
+              <div id="div-sms" class="type-input-div" style="display: none;">
+                <div class="form-group">
+                  <label class="form-label" for="inp-sms-phone">Recipient Phone Number</label>
+                  <input type="tel" id="inp-sms-phone" placeholder="+1234567890" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="inp-sms-message">Predefined Message Body</label>
+                  <textarea id="inp-sms-message" placeholder="Type SMS body..." class="form-input" rows="3"></textarea>
+                </div>
+              </div>
+
+              <!-- Email Input Div -->
+              <div id="div-email" class="type-input-div" style="display: none;">
+                <div class="form-group">
+                  <label class="form-label" for="inp-email-to">Recipient Email Address</label>
+                  <input type="email" id="inp-email-to" placeholder="name@domain.com" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="inp-email-subject">Subject Line</label>
+                  <input type="text" id="inp-email-subject" placeholder="Subject..." class="form-input">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="inp-email-body">Email Body Content</label>
+                  <textarea id="inp-email-body" placeholder="Draft body..." class="form-input" rows="3"></textarea>
+                </div>
+              </div>
+
+              <!-- WhatsApp Input Div -->
+              <div id="div-whatsapp" class="type-input-div" style="display: none;">
+                <div class="form-group">
+                  <label class="form-label" for="inp-wa-phone">WhatsApp Number (with country code)</label>
+                  <input type="tel" id="inp-wa-phone" placeholder="1234567890" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="inp-wa-message">Prefilled Chat Text</label>
+                  <textarea id="inp-wa-message" placeholder="Hello..." class="form-input" rows="3"></textarea>
+                </div>
+              </div>
+
+              <!-- Wi-Fi Input Div -->
+              <div id="div-wifi" class="type-input-div" style="display: none;">
+                <div class="form-group">
+                  <label class="form-label" for="inp-wifi-ssid">SSID Network Name</label>
+                  <input type="text" id="inp-wifi-ssid" placeholder="Home Network" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="inp-wifi-password">Password</label>
+                  <input type="password" id="inp-wifi-password" placeholder="SSID Password" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="inp-wifi-enc">Security Type</label>
+                  <select id="inp-wifi-enc" class="form-input form-select">
+                    <option value="WPA">WPA / WPA2</option>
+                    <option value="WEP">WEP</option>
+                    <option value="nopass">Unsecured Network (No password)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- vCard Input Div -->
+              <div id="div-vcard" class="type-input-div" style="display: none;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                  <div class="form-group">
+                    <label class="form-label" for="inp-vc-first">First Name</label>
+                    <input type="text" id="inp-vc-first" placeholder="John" class="form-input">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="inp-vc-last">Last Name</label>
+                    <input type="text" id="inp-vc-last" placeholder="Doe" class="form-input">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="inp-vc-phone">Mobile Phone</label>
+                  <input type="tel" id="inp-vc-phone" placeholder="+1234567890" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="inp-vc-email">Email Address</label>
+                  <input type="email" id="inp-vc-email" placeholder="john@doe.com" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="inp-vc-org">Company</label>
+                  <input type="text" id="inp-vc-org" placeholder="Corporation" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="inp-vc-web">Website</label>
+                  <input type="url" id="inp-vc-web" placeholder="https://domain.com" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="inp-vc-note">Bio Note</label>
+                  <input type="text" id="inp-vc-note" placeholder="Short description..." class="form-input">
+                </div>
+              </div>
+
+              <!-- Location Input Div -->
+              <div id="div-location" class="type-input-div" style="display: none;">
+                <div class="form-group">
+                  <label class="form-label" for="inp-loc-address">Physical Target Location Address</label>
+                  <input type="text" id="inp-loc-address" placeholder="1600 Amphitheatre Pkwy, Mountain View, CA" class="form-input">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                  <div class="form-group">
+                    <label class="form-label" for="inp-loc-lat">Latitude</label>
+                    <input type="text" id="inp-loc-lat" placeholder="37.4220" class="form-input">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="inp-loc-long">Longitude</label>
+                    <input type="text" id="inp-loc-long" placeholder="-122.0841" class="form-input">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Event Input Div -->
+              <div id="div-event" class="type-input-div" style="display: none;">
+                <div class="form-group">
+                  <label class="form-label" for="inp-evt-title">Event Title</label>
+                  <input type="text" id="inp-evt-title" placeholder="Company Keynote" class="form-input">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                  <div class="form-group">
+                    <label class="form-label" for="inp-evt-start">Start Time</label>
+                    <input type="datetime-local" id="inp-evt-start" class="form-input">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="inp-evt-end">End Time</label>
+                    <input type="datetime-local" id="inp-evt-end" class="form-input">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="inp-evt-loc">Venue Location</label>
+                  <input type="text" id="inp-evt-loc" placeholder="Conference Room" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="inp-evt-desc">Event Description</label>
+                  <textarea id="inp-evt-desc" placeholder="Details..." class="form-input" rows="2"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Customization Settings -->
+            <div style="border-top: 1px solid var(--glass-border); padding-top: 20px; display: flex; flex-direction: column; gap: 20px;">
+              <h3 style="font-size: 1.15rem; color: var(--accent-primary);">Design Customization Styling</h3>
+
+              <!-- Dots -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                  <label class="form-label" for="dots-color">Dots Color</label>
+                  <input type="color" id="dots-color" value="#7c4dff" class="form-input" style="height: 48px; padding: 4px;">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="dots-type">Dots Type</label>
+                  <select id="dots-type" class="form-input form-select">
+                    <option value="square">Square</option>
+                    <option value="rounded" selected>Rounded</option>
+                    <option value="dots">Dots</option>
+                    <option value="classy">Classy</option>
+                    <option value="classy-rounded">Classy-rounded</option>
+                    <option value="extra-rounded">Extra-rounded</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Background -->
+              <div class="form-group" style="max-width: 50%;">
+                <label class="form-label" for="bg-color">Background Color</label>
+                <input type="color" id="bg-color" value="#ffffff" class="form-input" style="height: 48px; padding: 4px;">
+              </div>
+
+              <!-- Corner Square -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                  <label class="form-label" for="corner-sq-color">Corners Square Color</label>
+                  <input type="color" id="corner-sq-color" value="#0a0812" class="form-input" style="height: 48px; padding: 4px;">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="corner-sq-type">Corners Square Type</label>
+                  <select id="corner-sq-type" class="form-input form-select">
+                    <option value="square">Square</option>
+                    <option value="dot">Dot</option>
+                    <option value="extra-rounded" selected>Extra-rounded</option>
+                    <option value="outround">Outround</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Corner Dot -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                  <label class="form-label" for="corner-dot-color">Corners Dot Color</label>
+                  <input type="color" id="corner-dot-color" value="#ff4081" class="form-input" style="height: 48px; padding: 4px;">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="corner-dot-type">Corners Dot Type</label>
+                  <select id="corner-dot-type" class="form-input form-select">
+                    <option value="square">Square</option>
+                    <option value="dot" selected>Dot</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Logo -->
+              <div class="form-group">
+                <label class="form-label" for="logo-file">Upload Logo Brand Image (Max 2MB)</label>
+                <input type="file" id="logo-file" accept="image/*" class="form-input" style="padding: 10px;">
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                  <label class="form-label" for="logo-size">Logo Scale Size</label>
+                  <input type="range" id="logo-size" min="0.1" max="0.5" step="0.05" value="0.3" class="form-input" style="padding: 0;">
+                </div>
+                <div class="form-group" style="flex-direction: row; align-items: center; justify-content: space-between; margin-top: 24px;">
+                  <label class="form-label" for="hide-logo-dots" style="margin: 0; cursor: pointer;">Hide Background Dots</label>
+                  <input type="checkbox" id="hide-logo-dots" checked style="width: 20px; height: 20px; cursor: pointer;">
+                </div>
+              </div>
+
+              <!-- Error correction -->
+              <div class="form-group" style="max-width: 50%;">
+                <label class="form-label" for="err-correction">Error Correction Level</label>
+                <select id="err-correction" class="form-input form-select">
+                  <option value="L">L (7%)</option>
+                  <option value="M">M (15%)</option>
+                  <option value="Q" selected>Q (25%)</option>
+                  <option value="H">H (30%)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="btn btn-primary" style="padding: 14px; margin-top: 10px;" id="submit-btn">
+              Save QR Changes
+            </button>
+          </form>
+
+          <!-- Right side: Live Preview -->
+          <div class="glass-panel" style="position: sticky; top: 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center;">
+            <h3 style="font-size: 1.1rem;">Style Preview</h3>
+            <div id="preview-canvas" style="min-height: 240px; display: flex; align-items: center; justify-content: center; background: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); width: fit-content; margin: 0 auto; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></div>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Redirection destinations update immediately without changing the QR image.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const auth = checkAuth();
+    if (!auth) throw new Error("Auth required");
+
+    // Populate user profile info in sidebar
+    document.getElementById('user-display-name').innerText = auth.user.name;
+    document.getElementById('user-display-email').innerText = auth.user.email;
+    document.getElementById('user-display-role').innerText = auth.user.role;
+    if (auth.user.role === 'admin') {
+      const adminLink = document.getElementById('admin-sidebar-link');
+      adminLink.style.display = 'flex';
+    }
+
+    // Sidebar Mobile triggers
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    document.getElementById('toggle-mobile-sidebar').addEventListener('click', () => {
+      sidebar.classList.add('open');
+      overlay.style.display = 'block';
+    });
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      overlay.style.display = 'none';
+    });
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      localStorage.removeItem('qr_auth_token');
+      localStorage.removeItem('qr_user');
+      window.location.href = '/login';
+    });
+
+    // Extract QR ID from pathname (Vercel routes /dashboard/edit/:id) or query parameter (local fallback)
+    function getQrId() {
+      // Priority 1: query string ?id=
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('id')) return urlParams.get('id');
+      
+      // Priority 2: parse URL path (e.g. /dashboard/edit/123)
+      const pathParts = window.location.pathname.split('/');
+      return pathParts[pathParts.length - 1];
+    }
+
+    const qrId = getQrId();
+    if (!qrId) {
+      showToast('QR Code ID missing.', 'error');
+      setTimeout(() => window.location.href = '/dashboard', 1000);
+    }
+
+    // Form variables
+    let currentType = 'url';
+    let shortId = '';
+    let logoBase64 = null;
+
+    // Load QR Data from Backend
+    async function loadQrData() {
+      const container = document.getElementById('main-edit-container');
+      try {
+        const qr = await apiRequest(`/qr/${qrId}`);
+        shortId = qr.short_id;
+        currentType = qr.type;
+
+        // Populate fields
+        const typeSelect = document.getElementById('qr-type');
+        typeSelect.innerHTML = `<option value="${qr.type}" selected>${qr.type.toUpperCase()}</option>`;
+        document.getElementById('folder').value = qr.folder || 'General';
+        
+        // Show specific target input
+        document.getElementById(`div-${qr.type}`).style.display = 'block';
+        populateTargetInputs(qr.type, qr.destination_content);
+
+        // Populate styling fields
+        const settings = qr.customization_settings || {};
+        if (settings.dotsOptions) {
+          document.getElementById('dots-color').value = settings.dotsOptions.color || '#7c4dff';
+          document.getElementById('dots-type').value = settings.dotsOptions.type || 'rounded';
+        }
+        if (settings.backgroundOptions) {
+          document.getElementById('bg-color').value = settings.backgroundOptions.color || '#ffffff';
+        }
+        if (settings.cornersSquareOptions) {
+          document.getElementById('corner-sq-color').value = settings.cornersSquareOptions.color || '#0a0812';
+          document.getElementById('corner-sq-type').value = settings.cornersSquareOptions.type || 'extra-rounded';
+        }
+        if (settings.cornersDotOptions) {
+          document.getElementById('corner-dot-color').value = settings.cornersDotOptions.color || '#ff4081';
+          document.getElementById('corner-dot-type').value = settings.cornersDotOptions.type || 'dot';
+        }
+        if (settings.imageOptions) {
+          document.getElementById('logo-size').value = settings.imageOptions.imageSize || 0.3;
+          document.getElementById('hide-logo-dots').checked = settings.imageOptions.hideBackgroundDots !== false;
+        }
+        if (settings.logo) {
+          logoBase64 = settings.logo;
+        }
+        if (settings.errorCorrectionLevel) {
+          document.getElementById('err-correction').value = settings.errorCorrectionLevel || 'Q';
+        }
+
+        updatePreview();
+      } catch (err) {
+        showToast(err.message || 'Error loading QR details.', 'error');
+      }
+    }
+
+    // Populate target input fields depending on category
+    function populateTargetInputs(type, content) {
+      if (!content) return;
+      
+      switch (type) {
+        case 'url':
+          document.getElementById('inp-url').value = content.url || content;
+          break;
+        case 'text':
+          document.getElementById('inp-text').value = content.text || content;
+          break;
+        case 'phone':
+          document.getElementById('inp-phone').value = content.phone || content;
+          break;
+        case 'sms':
+          document.getElementById('inp-sms-phone').value = content.phone || '';
+          document.getElementById('inp-sms-message').value = content.message || '';
+          break;
+        case 'email':
+          document.getElementById('inp-email-to').value = content.email || '';
+          document.getElementById('inp-email-subject').value = content.subject || '';
+          document.getElementById('inp-email-body').value = content.body || '';
+          break;
+        case 'whatsapp':
+          document.getElementById('inp-wa-phone').value = content.phone || '';
+          document.getElementById('inp-wa-message').value = content.message || '';
+          break;
+        case 'wifi':
+          document.getElementById('inp-wifi-ssid').value = content.ssid || '';
+          document.getElementById('inp-wifi-password').value = content.password || '';
+          document.getElementById('inp-wifi-enc').value = content.encryption || 'WPA';
+          break;
+        case 'vcard':
+          document.getElementById('inp-vc-first').value = content.firstName || '';
+          document.getElementById('inp-vc-last').value = content.lastName || '';
+          document.getElementById('inp-vc-phone').value = content.phone || '';
+          document.getElementById('inp-vc-email').value = content.email || '';
+          document.getElementById('inp-vc-org').value = content.org || '';
+          document.getElementById('inp-vc-web').value = content.website || '';
+          document.getElementById('inp-vc-note').value = content.note || '';
+          break;
+        case 'location':
+          document.getElementById('inp-loc-address').value = content.address || '';
+          document.getElementById('inp-loc-lat').value = content.latitude || '';
+          document.getElementById('inp-loc-long').value = content.longitude || '';
+          break;
+        case 'event':
+          document.getElementById('inp-evt-title').value = content.title || '';
+          
+          // Reformat datetime inputs (YYYY-MM-DDTHH:MM)
+          const formatDateTime = (dateStr) => {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+            return d.toISOString().slice(0, 16);
+          };
+
+          document.getElementById('inp-evt-start').value = formatDateTime(content.start);
+          document.getElementById('inp-evt-end').value = formatDateTime(content.end);
+          document.getElementById('inp-evt-loc').value = content.location || '';
+          document.getElementById('inp-evt-desc').value = content.description || '';
+          break;
+      }
+    }
+
+    // Get current inputs
+    function getDestinationContent(type) {
+      switch (type) {
+        case 'url':
+          return { url: document.getElementById('inp-url').value };
+        case 'text':
+          return { text: document.getElementById('inp-text').value };
+        case 'phone':
+          return { phone: document.getElementById('inp-phone').value };
+        case 'sms':
+          return { phone: document.getElementById('inp-sms-phone').value, message: document.getElementById('inp-sms-message').value };
+        case 'email':
+          return { email: document.getElementById('inp-email-to').value, subject: document.getElementById('inp-email-subject').value, body: document.getElementById('inp-email-body').value };
+        case 'whatsapp':
+          return { phone: document.getElementById('inp-wa-phone').value, message: document.getElementById('inp-wa-message').value };
+        case 'wifi':
+          return { ssid: document.getElementById('inp-wifi-ssid').value, password: document.getElementById('inp-wifi-password').value, encryption: document.getElementById('inp-wifi-enc').value };
+        case 'vcard':
+          return {
+            firstName: document.getElementById('inp-vc-first').value,
+            lastName: document.getElementById('inp-vc-last').value,
+            phone: document.getElementById('inp-vc-phone').value,
+            email: document.getElementById('inp-vc-email').value,
+            org: document.getElementById('inp-vc-org').value,
+            website: document.getElementById('inp-vc-web').value,
+            note: document.getElementById('inp-vc-note').value
+          };
+        case 'location':
+          return { address: document.getElementById('inp-loc-address').value, latitude: document.getElementById('inp-loc-lat').value, longitude: document.getElementById('inp-loc-long').value };
+        case 'event':
+          return {
+            title: document.getElementById('inp-evt-title').value,
+            start: document.getElementById('inp-evt-start').value,
+            end: document.getElementById('inp-evt-end').value,
+            location: document.getElementById('inp-evt-loc').value,
+            description: document.getElementById('inp-evt-desc').value
+          };
+        default:
+          return {};
+      }
+    }
+
+    function validateInputs(type) {
+      if (type === 'url' && !document.getElementById('inp-url').value) {
+        showToast('URL is required.', 'error');
+        return false;
+      }
+      if (type === 'text' && !document.getElementById('inp-text').value) {
+        showToast('Text content is required.', 'error');
+        return false;
+      }
+      if (type === 'phone' && !document.getElementById('inp-phone').value) {
+        showToast('Phone number is required.', 'error');
+        return false;
+      }
+      if (type === 'sms' && (!document.getElementById('inp-sms-phone').value || !document.getElementById('inp-sms-message').value)) {
+        showToast('Phone number and message are required.', 'error');
+        return false;
+      }
+      if (type === 'email' && (!document.getElementById('inp-email-to').value || !document.getElementById('inp-email-subject').value)) {
+        showToast('Email and subject are required.', 'error');
+        return false;
+      }
+      if (type === 'wifi' && !document.getElementById('inp-wifi-ssid').value) {
+        showToast('Wi-Fi SSID network name is required.', 'error');
+        return false;
+      }
+      return true;
+    }
+
+    // Logo Upload Listener
+    document.getElementById('logo-file').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (file.size > 2 * 1024 * 1024) {
+        showToast('Logo file must be under 2MB.', 'error');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        logoBase64 = event.target.result;
+        showToast('Logo loaded successfully.', 'success');
+        updatePreview();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function getStylingSettings() {
+      return {
+        dotsOptions: {
+          color: document.getElementById('dots-color').value,
+          type: document.getElementById('dots-type').value
+        },
+        backgroundOptions: {
+          color: document.getElementById('bg-color').value
+        },
+        cornersSquareOptions: {
+          color: document.getElementById('corner-sq-color').value,
+          type: document.getElementById('corner-sq-type').value
+        },
+        cornersDotOptions: {
+          color: document.getElementById('corner-dot-color').value,
+          type: document.getElementById('corner-dot-type').value
+        },
+        imageOptions: {
+          hideBackgroundDots: document.getElementById('hide-logo-dots').checked,
+          imageSize: parseFloat(document.getElementById('logo-size').value),
+          margin: 4
+        },
+        logo: logoBase64 || undefined,
+        errorCorrectionLevel: document.getElementById('err-correction').value
+      };
+    }
+
+    // Redraw preview
+    function updatePreview() {
+      const container = document.getElementById('preview-canvas');
+      container.innerHTML = '';
+
+      const settings = getStylingSettings();
+
+      const previewQr = new QRCodeStyling({
+        width: 220,
+        height: 220,
+        data: `${API_URL}/qr/${shortId || 'placeholder'}`,
+        margin: 4,
+        qrOptions: {
+          typeNumber: 0,
+          mode: 'Byte',
+          errorCorrectionLevel: settings.errorCorrectionLevel
+        },
+        dotsOptions: settings.dotsOptions,
+        backgroundOptions: settings.backgroundOptions,
+        cornersSquareOptions: settings.cornersSquareOptions,
+        cornersDotOptions: settings.cornersDotOptions,
+        imageOptions: settings.imageOptions,
+        image: settings.logo
+      });
+      previewQr.append(container);
+    }
+
+    // Re-draw triggers
+    const previewTriggers = [
+      'dots-color', 'dots-type', 'bg-color', 
+      'corner-sq-color', 'corner-sq-type', 
+      'corner-dot-color', 'corner-dot-type', 
+      'logo-size', 'hide-logo-dots', 'err-correction'
+    ];
+    previewTriggers.forEach(id => {
+      document.getElementById(id).addEventListener('change', updatePreview);
+      document.getElementById(id).addEventListener('input', updatePreview);
+    });
+
+    // Submit Changes
+    document.getElementById('edit-qr-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (!validateInputs(currentType)) return;
+
+      const submitBtn = document.getElementById('submit-btn');
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Saving changes...';
+
+      try {
+        await apiRequest(`/qr/${qrId}`, 'PUT', {
+          destination_content: getDestinationContent(currentType),
+          customization_settings: getStylingSettings(),
+          folder: document.getElementById('folder').value
+        });
+        showToast('Dynamic QR Code updated successfully!', 'success');
+        setTimeout(() => window.location.href = '/dashboard', 800);
+      } catch (err) {
+        showToast(err.message || 'Failed to update QR code.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Save QR Changes';
+      }
+    });
+
+    // Start
+    loadQrData();
+  </script>
+</body>
+</html>

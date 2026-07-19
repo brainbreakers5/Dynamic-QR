@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>dynamicQR - Analytics</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/api.js"></script>
+  <!-- Chart.js CDN for professional charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Mobile Header -->
+  <div class="dashboard-mobile-header">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="10" height="10" rx="2" stroke="url(#logoGrad)" stroke-width="3" />
+        <rect x="20" y="2" width="10" height="10" rx="2" stroke="url(#logoGrad)" stroke-width="3" />
+        <rect x="2" y="20" width="10" height="10" rx="2" stroke="url(#logoGrad)" stroke-width="3" />
+        <rect x="20" y="20" width="10" height="10" rx="2" fill="url(#logoGrad)" />
+      </svg>
+      <span style="font-size: 1.15rem; font-weight: 800;">dynamicQR</span>
+    </div>
+    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" id="toggle-mobile-sidebar">Menu</button>
+  </div>
+
+  <div class="dashboard-wrapper">
+    <!-- Sidebar Navigation -->
+    <div class="dashboard-sidebar glass-panel" id="sidebar">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="10" height="10" rx="2" stroke="url(#logoGrad)" stroke-width="3" />
+          <rect x="20" y="2" width="10" height="10" rx="2" stroke="url(#logoGrad)" stroke-width="3" />
+          <rect x="2" y="20" width="10" height="10" rx="2" stroke="url(#logoGrad)" stroke-width="3" />
+          <rect x="20" y="20" width="10" height="10" rx="2" fill="url(#logoGrad)" />
+        </svg>
+        <span style="font-size: 1.25rem; font-weight: 800; letter-spacing: -0.02em;">
+          dynamic<span style="color: var(--accent-secondary);">QR</span>
+        </span>
+      </div>
+
+      <nav style="display: flex; flex-direction: column; gap: 16px; margin-top: 10px;">
+        <a href="/dashboard" class="nav-link active" style="font-weight: 600; padding: 8px 0; display: flex; align-items: center; gap: 8px;">
+          📊 Dashboard
+        </a>
+        <a href="/dashboard/new" class="nav-link" style="font-weight: 600; padding: 8px 0; display: flex; align-items: center; gap: 8px;">
+          ➕ New QR Code
+        </a>
+        <a href="/dashboard/admin" class="nav-link" id="admin-sidebar-link" style="display: none; font-weight: 600; padding: 8px 0; display: none; align-items: center; gap: 8px;">
+          ⚙️ Admin Panel
+        </a>
+      </nav>
+
+      <!-- Profile Section -->
+      <div style="margin-top: auto; border-top: 1px solid var(--glass-border); padding-top: 16px; display: flex; flex-direction: column; gap: 12px;">
+        <div>
+          <p style="font-weight: 700; color: var(--text-primary); font-size: 0.95rem;" id="user-display-name">User Name</p>
+          <p style="font-size: 0.8rem; color: var(--text-muted);" id="user-display-email">email@domain.com</p>
+          <span class="badge badge-active" style="font-size: 0.6rem; margin-top: 4px; display: inline-block; padding: 2px 6px;" id="user-display-role">user</span>
+        </div>
+        <button class="btn btn-secondary" style="width: 100%; padding: 10px;" id="logout-btn">
+          🚪 Logout
+        </button>
+      </div>
+    </div>
+
+    <!-- Sidebar overlay -->
+    <div class="dashboard-sidebar-overlay" id="sidebar-overlay" style="display: none;"></div>
+
+    <!-- Main Content -->
+    <main class="dashboard-main animate-fade-in">
+      <div style="display: flex; flex-direction: column; gap: 32px;" id="main-analytics-container">
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <h1 style="font-size: 2.25rem; margin-bottom: 4px;">Scan Analytics</h1>
+            <p>Monitor metrics and referrer channels for QR: <span id="qr-id-title" style="font-family: var(--font-mono); font-weight: bold; color: var(--accent-primary);">...</span></p>
+          </div>
+          <a href="/dashboard" class="btn btn-secondary">
+            &larr; Back to List
+          </a>
+        </div>
+
+        <!-- Total KPI -->
+        <div class="glass-panel" style="display: flex; align-items: center; justify-content: space-between; padding: 24px 32px; max-width: 320px;">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span style="color: var(--text-secondary); font-size: 0.9rem; font-weight: 600;">Total Captured Scans</span>
+            <span style="font-size: 2.75rem; font-weight: 850; color: var(--accent-secondary);" id="kpi-scans">...</span>
+          </div>
+          <div style="font-size: 2.5rem;">📈</div>
+        </div>
+
+        <!-- Daily Scans Chart (Line) -->
+        <div class="glass-panel" style="display: flex; flex-direction: column; gap: 20px;">
+          <h3 style="font-size: 1.25rem;">Daily Scans (Last 30 Days)</h3>
+          <div style="height: 320px; position: relative; width: 100%;">
+            <canvas id="chart-daily-scans"></canvas>
+          </div>
+        </div>
+
+        <!-- Breakdown Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;">
+          
+          <!-- Devices (Doughnut) -->
+          <div class="glass-panel" style="display: flex; flex-direction: column; gap: 16px;">
+            <h3 style="font-size: 1.15rem;">Device Category</h3>
+            <div style="height: 240px; display: flex; align-items: center; justify-content: center;">
+              <canvas id="chart-devices"></canvas>
+            </div>
+          </div>
+
+          <!-- Operating Systems (Bar) -->
+          <div class="glass-panel" style="display: flex; flex-direction: column; gap: 16px;">
+            <h3 style="font-size: 1.15rem;">Operating Systems</h3>
+            <div style="height: 240px; display: flex; align-items: center; justify-content: center;">
+              <canvas id="chart-os"></canvas>
+            </div>
+          </div>
+
+          <!-- Browsers (Doughnut) -->
+          <div class="glass-panel" style="display: flex; flex-direction: column; gap: 16px;">
+            <h3 style="font-size: 1.15rem;">User Browsers</h3>
+            <div style="height: 240px; display: flex; align-items: center; justify-content: center;">
+              <canvas id="chart-browsers"></canvas>
+            </div>
+          </div>
+
+          <!-- Referrers (Bar) -->
+          <div class="glass-panel" style="display: flex; flex-direction: column; gap: 16px;">
+            <h3 style="font-size: 1.15rem;">Referrer Channels</h3>
+            <div style="height: 240px; display: flex; align-items: center; justify-content: center;">
+              <canvas id="chart-referrers"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Countries & Cities Demographics -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;">
+          <!-- Countries -->
+          <div class="glass-panel" style="display: flex; flex-direction: column; gap: 16px;">
+            <h3 style="font-size: 1.15rem;">Top Countries</h3>
+            <div style="height: 260px;">
+              <canvas id="chart-countries"></canvas>
+            </div>
+          </div>
+
+          <!-- Cities -->
+          <div class="glass-panel" style="display: flex; flex-direction: column; gap: 16px;">
+            <h3 style="font-size: 1.15rem;">Top Cities</h3>
+            <div style="height: 260px;">
+              <canvas id="chart-cities"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Raw Logs Table -->
+        <div class="glass-panel" style="display: flex; flex-direction: column; gap: 20px; overflow-x: auto;">
+          <h3 style="font-size: 1.25rem;">Recent Scan Log Audit (Last 20 scans)</h3>
+          
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;" id="logs-table">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--glass-border); color: var(--text-muted);">
+                <th style="padding: 12px 8px;">Scanned At</th>
+                <th style="padding: 12px 8px;">IP Address</th>
+                <th style="padding: 12px 8px;">Location</th>
+                <th style="padding: 12px 8px;">Device Info</th>
+                <th style="padding: 12px 8px;">Referrer</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const auth = checkAuth();
+    if (!auth) throw new Error("Auth required");
+
+    // Populate user profile info in sidebar
+    document.getElementById('user-display-name').innerText = auth.user.name;
+    document.getElementById('user-display-email').innerText = auth.user.email;
+    document.getElementById('user-display-role').innerText = auth.user.role;
+    if (auth.user.role === 'admin') {
+      const adminLink = document.getElementById('admin-sidebar-link');
+      adminLink.style.display = 'flex';
+    }
+
+    // Sidebar Mobile triggers
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    document.getElementById('toggle-mobile-sidebar').addEventListener('click', () => {
+      sidebar.classList.add('open');
+      overlay.style.display = 'block';
+    });
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      overlay.style.display = 'none';
+    });
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      localStorage.removeItem('qr_auth_token');
+      localStorage.removeItem('qr_user');
+      window.location.href = '/login';
+    });
+
+    // Extract QR ID from path/query
+    function getQrId() {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('id')) return urlParams.get('id');
+      const pathParts = window.location.pathname.split('/');
+      return pathParts[pathParts.length - 1];
+    }
+
+    const qrId = getQrId();
+    if (!qrId) {
+      showToast('QR Code ID missing.', 'error');
+      setTimeout(() => window.location.href = '/dashboard', 1000);
+    }
+
+    // Load stats
+    async function loadAnalytics() {
+      try {
+        const data = await apiRequest(`/analytics/${qrId}`);
+        document.getElementById('qr-id-title').innerText = data.short_id;
+        document.getElementById('kpi-scans').innerText = data.total_scans;
+
+        // Render all Chart.js instances
+        renderLineChart(data.daily_scans);
+        renderDoughnutChart('chart-devices', data.devices, 'device');
+        renderBarChart('chart-os', data.operating_systems, 'os', 'y');
+        renderDoughnutChart('chart-browsers', data.browsers, 'browser');
+        renderBarChart('chart-referrers', data.referrers, 'referrer', 'x');
+        renderBarChart('chart-countries', data.countries, 'country', 'y');
+        renderBarChart('chart-cities', data.cities, 'city', 'x');
+
+        // Render Raw Log table Rows
+        renderLogsTable(data.recent_scans);
+      } catch (err) {
+        showToast(err.message || 'Error loading analytics.', 'error');
+      }
+    }
+
+    // Chart.js helper styles
+    const chartThemeColors = ['#7c4dff', '#ff4081', '#00e676', '#ffd600', '#00e5ff', '#ff5722'];
+
+    // 1. Line Chart Helper
+    function renderLineChart(dailyScans) {
+      const ctx = document.getElementById('chart-daily-scans').getContext('2d');
+      
+      // Ensure we fill dates if empty, or just map them
+      const labels = dailyScans.map(d => new Date(d.date).toLocaleDateString(undefined, {month: 'short', day: 'numeric'}));
+      const counts = dailyScans.map(d => d.count);
+
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Scans',
+            data: counts,
+            borderColor: '#7c4dff',
+            backgroundColor: 'rgba(124, 77, 255, 0.15)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.35,
+            pointBackgroundColor: '#ff4081',
+            pointBorderColor: '#ffffff',
+            pointRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#a39eb9' } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#a39eb9', stepSize: 1 }, min: 0 }
+          }
+        }
+      });
+    }
+
+    // 2. Doughnut Chart Helper
+    function renderDoughnutChart(canvasId, dataset, key) {
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      const labels = dataset.map(d => d[key]);
+      const counts = dataset.map(d => d.count);
+
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: counts,
+            backgroundColor: chartThemeColors.slice(0, dataset.length || 1),
+            borderWidth: 1,
+            borderColor: 'rgba(18, 14, 34, 0.6)'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: '#f3f1f9', padding: 12 }
+            }
+          }
+        }
+      });
+    }
+
+    // 3. Bar Chart Helper
+    function renderBarChart(canvasId, dataset, key, axis = 'x') {
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      const labels = dataset.map(d => d[key]);
+      const counts = dataset.map(d => d.count);
+
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: counts,
+            backgroundColor: chartThemeColors[0],
+            borderWidth: 0,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          indexAxis: axis,
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#a39eb9' } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#a39eb9' } }
+          }
+        }
+      });
+    }
+
+    // 4. Raw Logs Table Population
+    function renderLogsTable(logs) {
+      const tbody = document.querySelector('#logs-table tbody');
+      if (logs.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" style="padding: 24px; text-align: center; color: var(--text-muted);">
+              No scans recorded yet.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = '';
+      logs.forEach(log => {
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid var(--glass-border)';
+        tr.style.color = 'var(--text-secondary)';
+
+        const location = log.country && log.city ? `${log.city}, ${log.country}` : 'Localhost';
+        const date = new Date(log.scanned_at).toLocaleString();
+        
+        tr.innerHTML = `
+          <td style="padding: 12px 8px; font-family: var(--font-mono); font-size: 0.8rem;">${date}</td>
+          <td style="padding: 12px 8px;">${log.ip_address}</td>
+          <td style="padding: 12px 8px;">📍 ${location}</td>
+          <td style="padding: 12px 8px;">💻 ${log.device} / ${log.operating_system} (${log.browser})</td>
+          <td style="padding: 12px 8px; text-overflow: ellipsis; max-width: 150px; overflow: hidden; white-space: nowrap;" title="${log.referrer}">${log.referrer}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Run Load
+    loadAnalytics();
+  </script>
+</body>
+</html>

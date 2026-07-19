@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>dynamicQR - Premium Dynamic QR Code Generator</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/api.js"></script>
+</head>
+<body style="min-height: 100vh; display: flex; flex-direction: column;">
+
+  <!-- Header -->
+  <header class="glass-panel" style="margin: 20px auto; width: calc(100% - 40px); maxWidth: 1200px; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; border-radius: var(--border-radius-md); z-index: 10;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <!-- Logo Icon -->
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="10" height="10" rx="2" stroke="url(#logoGrad)" stroke-width="3" />
+        <rect x="2" y="20" width="10" height="10" rx="2" stroke="url(#logoGrad)" stroke-width="3" />
+        <rect x="20" y="2" width="10" height="10" rx="2" stroke="url(#logoGrad)" stroke-width="3" />
+        <rect x="20" y="20" width="10" height="10" rx="2" fill="url(#logoGrad)" />
+        <defs>
+          <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+            <stop stop-color="var(--accent-primary)" />
+            <stop offset="1" stop-color="var(--accent-secondary)" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <span style="font-size: 1.4rem; font-weight: 800; letter-spacing: -0.03em;">
+        dynamic<span style="color: var(--accent-secondary);">QR</span>
+      </span>
+    </div>
+
+    <nav style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;" id="landing-nav">
+      <a href="#features" class="nav-link" style="font-weight: 600;">Features</a>
+      <!-- Navigation items dynamically inserted here -->
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <main style="flex: 1; display: flex; flex-direction: column; align-items: center; padding: 40px 16px;">
+    <section style="text-align: center; max-width: 800px; margin-bottom: 48px; display: flex; flex-direction: column; align-items: center; gap: 20px;" class="animate-fade-in">
+      <span class="badge badge-active" style="font-size: 0.8rem; padding: 6px 12px;">
+        Next-Gen QR Solutions
+      </span>
+
+      <h1 style="font-size: clamp(2.25rem, 5vw, 4rem); font-weight: 850; line-height: 1.15; letter-spacing: -0.04em; background: linear-gradient(to right, #ffffff, var(--text-secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        Dynamic QR Codes with <span style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Real-time Analytics</span>
+      </h1>
+
+      <p style="font-size: clamp(0.95rem, 1.8vw, 1.2rem); max-width: 600px; margin: 0 auto; padding-left: 12px; padding-right: 12px;">
+        Create custom-styled QR codes. Update their destinations at any time without changing the QR image, and track detailed scan statistics.
+      </p>
+
+      <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 8px;" id="hero-actions">
+        <!-- Action buttons dynamically inserted here -->
+      </div>
+    </section>
+
+    <!-- Features Visual Grid -->
+    <section id="features" style="max-width: 1200px; width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-top: 20px;">
+      <!-- Card 1 -->
+      <div class="glass-panel" style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(124, 77, 255, 0.15); display: flex; align-items: center; justify-content: center; color: var(--accent-primary);">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 3h2v2h-2zm4 0h2v2h-2zm0-4h2v2h-2zm-4 0h2v2h-2z" />
+          </svg>
+        </div>
+        <h3 style="font-size: 1.25rem;">Dynamic Destinations</h3>
+        <p>Change where your QR code links to at any point, even after it is printed. Update target URLs, phone numbers, or Wi-Fi credentials instantly.</p>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="glass-panel" style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(255, 64, 129, 0.15); display: flex; align-items: center; justify-content: center; color: var(--accent-secondary);">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" />
+            <path d="M12 8V12L14 14" />
+          </svg>
+        </div>
+        <h3 style="font-size: 1.25rem;">Full QR Customization</h3>
+        <p>Personalize your QR codes with custom colors, dot types, eye corner geometries, error correction settings, and upload your custom business logo.</p>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="glass-panel" style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(0, 230, 118, 0.15); display: flex; align-items: center; justify-content: center; color: var(--accent-success);">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M18 20V10M12 20V4M6 20v-6" />
+          </svg>
+        </div>
+        <h3 style="font-size: 1.25rem;">Real-time Analytics</h3>
+        <p>Access precise click tracking. View total scans, browser usage, device splits, operating systems, country demographics, and referrer channels.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer style="border-top: 1px solid var(--glass-border); padding: 32px 20px; text-align: center; font-size: 0.9rem; color: var(--text-muted);">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+      <div>
+        &copy; <span id="year"></span> dynamicQR Inc. All rights reserved.
+      </div>
+      <div style="display: flex; gap: 20px;">
+        <a href="#" class="nav-link">Privacy Policy</a>
+        <a href="#" class="nav-link">Terms of Service</a>
+        <a href="#" class="nav-link">API Docs</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').innerText = new Date().getFullYear();
+
+    // Check login state to customize navigation and hero CTAs
+    const token = getAuthToken();
+    const user = getUser();
+    const nav = document.getElementById('landing-nav');
+    const heroActions = document.getElementById('hero-actions');
+
+    if (token && user) {
+      nav.innerHTML += `<a href="/dashboard" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.9rem;">Dashboard</a>`;
+      heroActions.innerHTML = `<a href="/dashboard" class="btn btn-primary" style="padding: 14px 28px; font-size: 1rem;">Go to Dashboard</a>`;
+    } else {
+      nav.innerHTML += `
+        <a href="/login" class="nav-link" style="font-weight: 600; font-size: 0.95rem;">Sign In</a>
+        <a href="/signup" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.9rem;">Get Started</a>
+      `;
+      heroActions.innerHTML = `<a href="/signup" class="btn btn-primary" style="padding: 14px 28px; font-size: 1rem;">Create Free Account</a>`;
+    }
+  </script>
+</body>
+</html>

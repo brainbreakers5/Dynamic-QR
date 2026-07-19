@@ -5,14 +5,14 @@ let cachedTransporter = null;
 async function getTransporter() {
   const host = process.env.SMTP_HOST;
   const port = parseInt(process.env.SMTP_PORT || '587', 10);
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
+  const user = process.env.SMTP_USER || process.env.SMTP_USERNAME;
+  const pass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD;
 
   if (host && user && pass) {
     return nodemailer.createTransport({
       host,
       port,
-      secure: port === 465,
+      secure: port === 465 || process.env.SMTP_SECURE === 'true',
       auth: { user, pass }
     });
   }
